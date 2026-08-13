@@ -1,0 +1,23 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.suo
+
+# Build artifacts
+*.pdb
+
+# OpenCode / Node dependencies
+.opencode/node_modules/
+
+# Visual Studio - configuracion local
+*.user
+*.userosscache
+*.sln.docstates
+
+# Logs y archivos temporales
+*.log
+*.tmp
+*.temp
