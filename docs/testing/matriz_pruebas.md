@@ -23,7 +23,7 @@ Prioridad: 1) funcionalidad crítica, 2) persistencia, 3) impresión,
 
 ## 3. Entorno requerido
 
-- Windows (la app es .NET Framework 4.0, x86, WinExe; no compila ni se
+- Windows (la app es .NET Framework 4.8.1, x86, WinExe; no compila ni se
   ejecuta en Linux).
 - Visual Studio 2022 17.13+ / MSBuild (msbuild ServicioTecnico.slnx
   /restore /p:Configuration=Debug).
@@ -93,9 +93,9 @@ Todas las pruebas comienzan en NOT_RUN.
 | FUN-038 | Reportes | Filtros 7 días/mes/30 días/año | Datos en rango | Datos y gráficas filtrados | Manual | NOT_RUN |
 | FUN-039 | Reportes | Filtro personalizado inválido | Desde > Hasta | Mensaje "La fecha 'Desde' no puede ser mayor..." | Manual | NOT_RUN |
 | FUN-040 | Reportes | Datos vacíos | BD sin órdenes en rango | Sin excepción; gráficas vacías | Manual | NOT_RUN |
-| FUN-041 | BD (unit) | Obtener/GuardarConfiguracion | rutaDB temporal/controlada | Round-trip: guardar y recuperar devuelve el valor | AUTO | NOT_RUN |
-| FUN-042 | BD (unit) | Obtener/GuardarCondicionesServicio | rutaDB temporal/controlada | Round-trip correcto | AUTO | NOT_RUN |
-| FUN-043 | BD (unit) | VerificarOCrearBD en carpeta vacía | BD temporal/controlada — NUNCA la BD real | Se crean las 5 tablas y las 3 claves de configuración iniciales | AUTO | NOT_RUN |
+| FUN-041 | BD (unit) | Obtener/GuardarConfiguracion | rutaDB temporal/controlada | Round-trip: guardar y recuperar devuelve el valor | AUTO | PASS |
+| FUN-042 | BD (unit) | Obtener/GuardarCondicionesServicio | rutaDB temporal/controlada | Round-trip correcto | AUTO | PASS |
+| FUN-043 | BD (unit) | VerificarOCrearBD en carpeta vacía | BD temporal/controlada — NUNCA la BD real | Se crean las 5 tablas y las 3 claves de configuración iniciales | AUTO | PASS |
 
 ## 6. Matriz de regresión
 
@@ -123,13 +123,14 @@ Todas comienzan en NOT_RUN.
 
 ## 7. Dependencias y precondiciones
 
-- Sistema: Windows con .NET Framework 4.0+; MSBuild/VS para compilación.
+- Sistema: Windows con .NET Framework 4.8.1; MSBuild/VS para compilación.
 - Archivos junto al exe: System.Data.SQLite.dll, BarcodeLib.dll, ordenes.db.
 - BD: copia controlada para pruebas (FUN-016/018/023/024, REG-005/006/013/015).
 - Impresora instalada para FUN-031 a FUN-034 y REG-008 a REG-011.
 - Configuración inicial (tabla configuracion): impresora="",
   imprimir_al_guardar="false", fuente_ticket="Courier New, 9";
-  tipo_impresion no inicializada (efectivo por defecto: ticket).
+  tipo_impresion no se inserta en la inicialización; si está vacía o ausente,
+  Imprimir() muestra error.
 - El arranque exige la presencia de ordenes.db (CheckRequiredFiles).
 - Función 5G.1: GuardarOrden() debe despachar por Imprimir() según
   tipo_impresion, no llamar directamente a ImprimirTicket().
@@ -162,6 +163,8 @@ El resto requiere UI Windows y se ejecuta manualmente.
 | R6 | Reportes limitados a 100 filas | frmReportesServicios.cs:56 |
 | R7 | Tabla `estados` creada pero no usada; estados en texto estado_entrega | modConexion.cs:35 |
 | R8 | Licencia: Timer licencia deshabilitado en el Diseñador; funcionalidad inactiva, sin pruebas activas | frmOrdenServicio.Designer.cs:710 |
+
+> Nota: los números de línea referenciados corresponden al estado del código en la Fase 0. Pueden haber cambiado en versiones posteriores.
 
 ## 11. Evidencia requerida para cada prueba
 

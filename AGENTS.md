@@ -1,9 +1,9 @@
 # AGENTS.md
 
-App de escritorio WinForms para gestión de órdenes de servicio de un taller técnico (VB.NET, UI e identificadores en español).
+App de escritorio WinForms para gestión de órdenes de servicio de un taller técnico (C# decompilado desde VB.NET, UI e identificadores en español). Target: .NET Framework 4.8.1.
 
 ## Build
-- Windows-only: `net40`, `WinExe`, `x86`, `Microsoft.NET.Sdk.WindowsDesktop`. **No se puede compilar ni ejecutar en Linux** — se necesita Windows + MSBuild/Visual Studio (`msbuild ServicioTecnico.slnx`).
+- Windows-only: `net481`, `WinExe`, `x86`, `Microsoft.NET.Sdk.WindowsDesktop`. **No se puede compilar ni ejecutar en Linux** — se necesita Windows + MSBuild/Visual Studio (`msbuild ServicioTecnico.slnx`). Compilación: `msbuild ServicioTecnico.slnx /restore /p:Configuration=Debug` (se genera en `bin/Debug/net481/`).
 - Solución en formato `.slnx` (VS 2022 17.13+).
 - DLLs locales en `Lib/` (`System.Data.SQLite.dll`, `BarcodeLib.dll`) vía `HintPath` + `Private=True`. No usar NuGet; deben copiarse junto al exe.
 
@@ -18,9 +18,9 @@ App de escritorio WinForms para gestión de órdenes de servicio de un taller t�
 
 ## Gotchas
 - Si agregas un formulario accesible vía `My.Forms.`, hay que registrarlo a mano en `ServicioTecnico.My/MyProject.cs` (clase `MyForms`); el `.csproj` SDK incluye `.cs` automáticamente.
-- Los `.resx` de formularios están en la raíz (`ServicioTecnico.frmX.resx`).
+- La mayoría de `.resx` de formularios están en la raíz del repositorio con formato `ServicioTecnico.frmX.resx` (frmOrdenServicio, frmClientes, frmConfiguracion). Excepción: `frmBuscaOrden.resx` está dentro de `ServicioTecnico/`. Algunos formularios (frmClienteDetalle, frmCondicionesServicio, frmReportesServicios, frmFoto) no tienen `.resx`.
 - La app valida al arranque que `BarcodeLib.dll`, `ordenes.db` y `System.Data.SQLite.dll` existan junto al exe y avisa si se ejecuta desde un ZIP.
-- Git repo inicializado sin commits; existe `.gitignore` que ignora `bin/`, `obj/`, `.vs/`, `*.suo`, `*.pdb` y `.opencode/node_modules/`.
+- Git repo inicializado sin commits; existe `.gitignore` que ignora `bin/`, `obj/`, `.vs/`, `*.suo`, `*.pdb`, `.opencode/node_modules/`, `*.user`, `*.log`, `*.tmp`, `*.temp`.
 
 ## Recuperación del Diseñador WinForms
 

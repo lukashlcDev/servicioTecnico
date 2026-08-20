@@ -1,8 +1,22 @@
 # Plan de Migración de ServicioTecnico a .NET 10
 
+## Estado actual
+
+| Fase | Estado |
+|---|---|
+| Fase 0 — Factibilidad y bloqueantes | **Completada** — ver `docs/migracion_dotnet10_fase0.md` |
+| Fase 1 — Baseline .NET Framework 4.0 | **Completada** — ver `docs/migracion_dotnet10_fase1.md` |
+| Fase 2 — .NET Framework 4.0 → 4.8.1 | **Completada** — ver `docs/migracion_dotnet10_fase2.md` |
+| Fase 3 — .NET Framework 4.8.1 → .NET 10 | **Pendiente** |
+| Fase 4 — Regresión completa y rendimiento | **Pendiente** |
+
+**Versión actual en producción:** .NET Framework 4.8.1, WinForms, x86, SQLite (`System.Data.SQLite` 1.0.119.0), `BarcodeLib` 1.0.0.21.
+
+---
+
 ## Objetivo
 
-Migrar el proyecto **ServicioTecnico** desde **.NET Framework 4.0** a **.NET 10**, manteniendo el comportamiento funcional existente y realizando una validación completa mediante pruebas de regresión y un chequeo comparativo de rendimiento.
+Migrar el proyecto **ServicioTecnico** desde **.NET Framework 4.8.1** a **.NET 10**, manteniendo el comportamiento funcional existente y realizando una validación completa mediante pruebas de regresión y un chequeo comparativo de rendimiento.
 
 La migración debe realizarse de forma controlada, evitando combinarla con refactorizaciones o cambios funcionales no necesarios.
 
@@ -127,6 +141,8 @@ Una vez despejados los bloqueantes de la Fase 0, se establece la línea base de 
 ## Versión de referencia
 
 **.NET Framework 4.0**
+
+> Nota: esta sección describe la versión original de referencia para la Fase 1. La versión actual del proyecto es .NET Framework 4.8.1 (Fase 2 completada).
 
 ## Objetivos
 
@@ -354,6 +370,8 @@ Regresión + rendimiento
                 ▼
         APROBACIÓN DE MIGRACIÓN
 ```
+
+Estado actual: Fases 0-2 completadas. Próximo paso: Fase 3.
 
 ---
 
