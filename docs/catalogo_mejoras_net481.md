@@ -47,7 +47,7 @@ Este documento formaliza mejoras candidatas para la rama .NET Framework 4.8.1. D
    - `frmOrdenServicio.cs:166` guarda exactamente `Laptop`, `Impresora`, `PC` o `Otros: ` seguido del texto de `txtOtros`.
    - `CargarOrden`, en `frmOrdenServicio.cs:1066-1085`, primero verifica `text.StartsWith("Otros:")`; si coincide, selecciona `rbtnOtros` y asigna a `txtOtros` el texto posterior a la posicion 6, aplicando `Trim()`.
    - Si el texto es exactamente `Laptop`, `Impresora` o `PC`, selecciona el RadioButton correspondiente mediante `switch`.
-   - Si el valor no coincide con esos casos ni comienza con `Otros:`, no se selecciona ningun RadioButton. No existe una rama `default`.
+   - Si el valor no coincide con esos casos ni comienza con `Otros:`, no se selecciona ningun RadioButton. No existe una rama `default`. Si posteriormente se guarda una orden sin ningun RadioButton seleccionado, `GuardarOrden()` cae en el ultimo operador ternario y genera `"Otros: " + txtOtros.Text.Trim()`; si `txtOtros` esta vacio, persiste `"Otros: "`.
    - `frmReportesServicios.cs` agrupa valores que comienzan con `Otros:` como `Otros`.
    - `frmBuscaOrden.cs` muestra `tipo_equipo`, pero no ofrece filtro por tipo.
 6. **Formularios afectados:** `frmOrdenServicio`, `frmReportesServicios`, `frmBuscaOrden`.
@@ -191,7 +191,7 @@ Este documento formaliza mejoras candidatas para la rama .NET Framework 4.8.1. D
    - La busqueda se dispara con boton o Enter; un criterio vacio muestra advertencia.
    - El grid usa `AutoSizeColumnsMode.Fill`, seleccion de fila completa, solo lectura y nueve columnas.
    - No se implementa preview de la orden, contador de resultados, paginacion ni filtro por tipo/estado.
-   - `ClientSize` es `853x376` y el formulario no tiene `AutoScaleMode` configurado explicitamente.
+   - `ClientSize` es `853x376` y `frmBuscaOrden.Designer.cs` configura `AutoScaleMode = Font`.
 6. **Formularios afectados:** `frmBuscaOrden`; potencialmente `frmOrdenServicio` por el contrato de seleccion.
 7. **Archivos afectados:** `ServicioTecnico/frmBuscaOrden.cs`, `ServicioTecnico/frmBuscaOrden.Designer.cs`.
 8. **Impacto sobre base de datos:** **NO** para cambios visuales. **POSIBLE** si se agregan filtros o consultas nuevas.

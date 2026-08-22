@@ -104,22 +104,24 @@ Todas comienzan en NOT_RUN.
 
 | ID | Funcionalidad | Precondiciones | Resultado esperado | Nota | Estado |
 |---|---|---|---|---|---|
-| REG-001 | Inicio de aplicación | Carpeta de trabajo completa | La app abre sin errores | | NOT_RUN |
-| REG-002 | Abrir Clientes | App iniciada | frmClientes abre y lista clientes | | NOT_RUN |
-| REG-003 | Crear cliente | frmClienteDetalle | Cliente guardado y recuperable | | NOT_RUN |
-| REG-004 | Buscar cliente | Clientes existentes | Coincidencias mostradas | | NOT_RUN |
-| REG-005 | Crear orden | Cliente y datos válidos | Orden creada con número asignado | Usar BD copia | NOT_RUN |
-| REG-006 | Consultar orden | Orden existente | Orden cargada correctamente | | NOT_RUN |
-| REG-007 | Guardar configuración | frmConfiguracion | Claves persistidas | | NOT_RUN |
-| REG-008 | Impresión manual ticket | Impresora; tipo=ticket | Ruta ImprimirTicket | | NOT_RUN |
-| REG-009 | Impresión manual carta | Impresora; tipo=carta | Ruta ImprimirCarta | | NOT_RUN |
-| REG-010 | Impresión automática ticket — OBLIGATORIA | imprimir_al_guardar=true; tipo=ticket | Guardar dispara ticket | Regresión del defecto 5G.1 | NOT_RUN |
-| REG-011 | Impresión automática carta — OBLIGATORIA | imprimir_al_guardar=true; tipo=carta | Guardar dispara carta | Regresión del defecto 5G.1 | NOT_RUN |
-| REG-012 | Generación de reporte | Órdenes existentes | Grid + gráficas generadas | | NOT_RUN |
-| REG-013 | Persistencia SQLite | Orden creada | Visible tras cerrar y reabrir la app | | NOT_RUN |
-| REG-014 | Cálculo total = presupuesto − abono | Valores válidos | Total correcto | | NOT_RUN |
-| REG-015 | Eliminación de cliente con órdenes | Cliente con órdenes | Bloqueada con mensaje | | NOT_RUN |
-| REG-016 | Condiciones de servicio en impresión | Condiciones guardadas | Aparecen al pie de la impresión | | NOT_RUN |
+| REG-001 | Inicio de aplicación | Carpeta de trabajo completa | La app abre sin errores | | PASS |
+| REG-002 | Abrir Clientes | App iniciada | frmClientes abre y lista clientes | | PASS |
+| REG-003 | Crear cliente | frmClienteDetalle | Cliente guardado y recuperable | | PASS |
+| REG-004 | Buscar cliente | Clientes existentes | Coincidencias mostradas | | PASS |
+| REG-005 | Crear orden | Cliente y datos válidos | Orden creada con número asignado | Usar BD copia | PASS |
+| REG-006 | Consultar orden | Orden existente | Orden cargada correctamente | | PASS |
+| REG-007 | Guardar configuración | frmConfiguracion | Claves persistidas | | PASS |
+| REG-008 | Impresión manual ticket | Impresora; tipo=ticket | Ruta ImprimirTicket | | PASS |
+| REG-009 | Impresión manual carta | Impresora; tipo=carta | Ruta ImprimirCarta | | PASS |
+| REG-010 | Impresión automática ticket — OBLIGATORIA | imprimir_al_guardar=true; tipo=ticket | Guardar dispara ticket | Regresión del defecto 5G.1 | PASS |
+| REG-011 | Impresión automática carta — OBLIGATORIA | imprimir_al_guardar=true; tipo=carta | Guardar dispara carta | Regresión del defecto 5G.1 | PASS |
+| REG-012 | Generación de reporte | Órdenes existentes | Grid + gráficas generadas | | PASS |
+| REG-013 | Persistencia SQLite | Orden creada | Visible tras cerrar y reabrir la app | | PASS |
+| REG-014 | Cálculo total = presupuesto − abono | Valores válidos | Total correcto | | PASS |
+| REG-015 | Eliminación de cliente con órdenes | Cliente con órdenes | Bloqueada con mensaje | | PASS |
+| REG-016 | Condiciones de servicio en impresión | Condiciones guardadas | Aparecen al pie de la impresión | | PASS |
+
+Nota: Los 16 casos REG fueron ejecutados y validados durante la Fase 2 de migración. La evidencia histórica está registrada en `docs/migracion_dotnet10_fase2.md`, sección 10.
 
 ## 7. Dependencias y precondiciones
 
