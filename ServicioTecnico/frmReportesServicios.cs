@@ -31,6 +31,28 @@ public partial class frmReportesServicios : Form
 		cmbTipoGrafico.SelectedIndex = 0;
 	}
 
+	private void AplicarFormatoMonetarioGrid()
+	{
+		if (dgvReportes.Columns.Contains("Presupuesto"))
+		{
+			DataGridViewColumn dataGridViewColumn = dgvReportes.Columns["Presupuesto"];
+			dataGridViewColumn.DefaultCellStyle.Format = "C2";
+			dataGridViewColumn.DefaultCellStyle.FormatProvider = FormatoMoneda.Cultura;
+		}
+		if (dgvReportes.Columns.Contains("Abono"))
+		{
+			DataGridViewColumn dataGridViewColumn2 = dgvReportes.Columns["Abono"];
+			dataGridViewColumn2.DefaultCellStyle.Format = "C2";
+			dataGridViewColumn2.DefaultCellStyle.FormatProvider = FormatoMoneda.Cultura;
+		}
+		if (dgvReportes.Columns.Contains("Total"))
+		{
+			DataGridViewColumn dataGridViewColumn3 = dgvReportes.Columns["Total"];
+			dataGridViewColumn3.DefaultCellStyle.Format = "C2";
+			dataGridViewColumn3.DefaultCellStyle.FormatProvider = FormatoMoneda.Cultura;
+		}
+	}
+
 	private void CargarDatosReportes()
 	{
 		try
@@ -39,6 +61,7 @@ public partial class frmReportesServicios : Form
 			dgvReportes.DataSource = dataSource;
 			dgvReportes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 			dgvReportes.ReadOnly = true;
+			AplicarFormatoMonetarioGrid();
 		}
 		catch (Exception ex)
 		{
@@ -159,7 +182,7 @@ public partial class frmReportesServicios : Form
 		Series series = new Series("Ingresos");
 		series.ChartType = SeriesChartType.Column;
 		series.IsValueShownAsLabel = true;
-		series.LabelFormat = "C2";
+		series.LabelFormat = "";
 		Series series2 = series;
 		string commandText = "SELECT substr(fecha, 4, 2) || '/' || substr(fecha, 7, 4) as Mes, SUM(presupuesto) as Total FROM ordenes WHERE presupuesto > 0 GROUP BY substr(fecha, 4, 2) || '/' || substr(fecha, 7, 4) ORDER BY substr(fecha, 7, 4), substr(fecha, 4, 2)";
 		using (SQLiteConnection sQLiteConnection = new SQLiteConnection("Data Source=" + modConexion.rutaDB))
@@ -169,11 +192,13 @@ public partial class frmReportesServicios : Form
 			using SQLiteDataReader sQLiteDataReader = sQLiteCommand.ExecuteReader();
 			while (sQLiteDataReader.Read())
 			{
-				series2.Points.AddXY(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Mes"]), RuntimeHelpers.GetObjectValue(sQLiteDataReader["Total"]));
+				double yValue = Convert.ToDouble(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Total"]));
+				int index = series2.Points.AddXY(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Mes"]), yValue);
+				series2.Points[index].Label = FormatoMoneda.Formatear(Convert.ToDecimal(yValue));
 			}
 		}
 		chartIngresosMensuales.Series.Add(series2);
-		chartIngresosMensuales.ChartAreas[0].AxisY.LabelStyle.Format = "C2";
+		AplicarEtiquetasEjeYMonetario();
 	}
 
 	private void btnActualizar_Click(object sender, EventArgs e)
@@ -224,6 +249,7 @@ public partial class frmReportesServicios : Form
 			sQLiteDataAdapter.Fill(dataTable);
 		}
 		dgvReportes.DataSource = dataTable;
+		AplicarFormatoMonetarioGrid();
 	}
 
 	private void GenerarGraficasConFiltro(string fechaDesde, string fechaHasta)
@@ -315,7 +341,7 @@ public partial class frmReportesServicios : Form
 		Series series = new Series("Ingresos");
 		series.ChartType = SeriesChartType.Column;
 		series.IsValueShownAsLabel = true;
-		series.LabelFormat = "C2";
+		series.LabelFormat = "";
 		Series series2 = series;
 		string commandText = "SELECT substr(fecha, 4, 2) || '/' || substr(fecha, 7, 4) as Mes, SUM(presupuesto) as Total FROM ordenes WHERE presupuesto > 0 AND substr(fecha, 7, 4) || substr(fecha, 4, 2) || substr(fecha, 1, 2) BETWEEN @fechaDesdeNum AND @fechaHastaNum GROUP BY substr(fecha, 4, 2) || '/' || substr(fecha, 7, 4) ORDER BY substr(fecha, 7, 4), substr(fecha, 4, 2)";
 		using (SQLiteConnection sQLiteConnection = new SQLiteConnection("Data Source=" + modConexion.rutaDB))
@@ -327,11 +353,13 @@ public partial class frmReportesServicios : Form
 			using SQLiteDataReader sQLiteDataReader = sQLiteCommand.ExecuteReader();
 			while (sQLiteDataReader.Read())
 			{
-				series2.Points.AddXY(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Mes"]), RuntimeHelpers.GetObjectValue(sQLiteDataReader["Total"]));
+				double yValue = Convert.ToDouble(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Total"]));
+				int index = series2.Points.AddXY(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Mes"]), yValue);
+				series2.Points[index].Label = FormatoMoneda.Formatear(Convert.ToDecimal(yValue));
 			}
 		}
 		chartIngresosMensuales.Series.Add(series2);
-		chartIngresosMensuales.ChartAreas[0].AxisY.LabelStyle.Format = "C2";
+		AplicarEtiquetasEjeYMonetario();
 	}
 
 	private string ConvertirFechaANumero(string fechaTexto)
@@ -346,6 +374,7 @@ public partial class frmReportesServicios : Form
 		{
 			DataTable dataSource = ObtenerDatosReportesPersonalizado();
 			dgvReportes.DataSource = dataSource;
+			AplicarFormatoMonetarioGrid();
 		}
 		catch (Exception ex)
 		{
@@ -440,7 +469,7 @@ public partial class frmReportesServicios : Form
 		Series series = new Series("Ingresos");
 		series.ChartType = SeriesChartType.Column;
 		series.IsValueShownAsLabel = true;
-		series.LabelFormat = "C2";
+		series.LabelFormat = "";
 		Series series2 = series;
 		string commandText = "SELECT substr(fecha, 4, 2) || '/' || substr(fecha, 7, 4) as Mes, SUM(presupuesto) as Total FROM ordenes WHERE presupuesto > 0 AND fecha BETWEEN @fechaDesde AND @fechaHasta GROUP BY substr(fecha, 4, 2) || '/' || substr(fecha, 7, 4) ORDER BY substr(fecha, 7, 4), substr(fecha, 4, 2)";
 		using (SQLiteConnection sQLiteConnection = new SQLiteConnection("Data Source=" + modConexion.rutaDB))
@@ -452,10 +481,151 @@ public partial class frmReportesServicios : Form
 			using SQLiteDataReader sQLiteDataReader = sQLiteCommand.ExecuteReader();
 			while (sQLiteDataReader.Read())
 			{
-				series2.Points.AddXY(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Mes"]), RuntimeHelpers.GetObjectValue(sQLiteDataReader["Total"]));
+				double yValue = Convert.ToDouble(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Total"]));
+				int index = series2.Points.AddXY(RuntimeHelpers.GetObjectValue(sQLiteDataReader["Mes"]), yValue);
+				series2.Points[index].Label = FormatoMoneda.Formatear(Convert.ToDecimal(yValue));
 			}
 		}
 		chartIngresosMensuales.Series.Add(series2);
-		chartIngresosMensuales.ChartAreas[0].AxisY.LabelStyle.Format = "C2";
+		AplicarEtiquetasEjeYMonetario();
+	}
+
+	private double CalcularIntervaloNice(double rango)
+	{
+		if (rango <= 0.0)
+		{
+			return 1.0;
+		}
+
+		double division = rango / 8.0;
+		double magnitud = Math.Pow(10.0, Math.Floor(Math.Log10(division)));
+		double residual = division / magnitud;
+
+		if (residual <= 1.0)
+		{
+			return magnitud;
+		}
+
+		if (residual <= 2.0)
+		{
+			return magnitud * 2.0;
+		}
+
+		if (residual <= 5.0)
+		{
+			return magnitud * 5.0;
+		}
+
+		return magnitud * 10.0;
+	}
+
+	private static void RestaurarEscalaAutomatica(Axis axisY)
+	{
+		axisY.Minimum = double.NaN;
+		axisY.Maximum = double.NaN;
+		axisY.Interval = 0.0;
+		axisY.LabelStyle.Enabled = true;
+	}
+
+	private void AplicarEtiquetasEjeYMonetario()
+	{
+		Axis axisY = chartIngresosMensuales.ChartAreas[0].AxisY;
+		axisY.CustomLabels.Clear();
+		RestaurarEscalaAutomatica(axisY);
+
+		Series series = chartIngresosMensuales.Series["Ingresos"];
+		if (series == null || series.Points.Count == 0)
+		{
+			return;
+		}
+
+		double min = double.MaxValue;
+		double max = double.MinValue;
+		bool hayValores = false;
+
+		foreach (DataPoint point in series.Points)
+		{
+			if (point.YValues.Length == 0)
+			{
+				continue;
+			}
+
+			double y = point.YValues[0];
+			if (double.IsNaN(y))
+			{
+				continue;
+			}
+
+			if (!hayValores || y < min)
+			{
+				min = y;
+			}
+
+			if (!hayValores || y > max)
+			{
+				max = y;
+			}
+
+			hayValores = true;
+		}
+
+		if (!hayValores)
+		{
+			return;
+		}
+
+		double rango = max - min;
+		double intervalo;
+		double minEtiqueta;
+		double maxEtiqueta;
+
+		if (rango == 0.0)
+		{
+			double baseMagnitud = (max != 0.0) ? Math.Abs(max) : 1.0;
+			intervalo = CalcularIntervaloNice(baseMagnitud);
+			if (intervalo < 1.0)
+			{
+				intervalo = 1.0;
+			}
+
+			minEtiqueta = Math.Min(0.0, Math.Floor(max / intervalo) * intervalo);
+			maxEtiqueta = Math.Ceiling(max / intervalo) * intervalo;
+		}
+		else
+		{
+			minEtiqueta = Math.Min(0.0, min);
+			intervalo = CalcularIntervaloNice(max - minEtiqueta);
+			if (intervalo < 1.0)
+			{
+				intervalo = 1.0;
+			}
+
+			minEtiqueta = Math.Floor(minEtiqueta / intervalo) * intervalo;
+			maxEtiqueta = Math.Ceiling(max / intervalo) * intervalo;
+		}
+
+		if (intervalo <= 0.0)
+		{
+			return;
+		}
+
+		if (maxEtiqueta - minEtiqueta < intervalo)
+		{
+			maxEtiqueta = minEtiqueta + intervalo;
+		}
+
+		axisY.Minimum = minEtiqueta;
+		axisY.Maximum = maxEtiqueta;
+		axisY.Interval = intervalo;
+
+		int maxLabels = 20;
+		int count = 0;
+		double epsilon = intervalo / 1000.0;
+		for (double y = minEtiqueta; y <= maxEtiqueta + epsilon && count < maxLabels; y += intervalo)
+		{
+			string texto = FormatoMoneda.Formatear(Convert.ToDecimal(y));
+			axisY.CustomLabels.Add(y - intervalo / 2.0, y + intervalo / 2.0, texto);
+			count++;
+		}
 	}
 }

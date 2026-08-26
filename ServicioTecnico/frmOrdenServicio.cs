@@ -26,6 +26,31 @@ public partial class frmOrdenServicio : Form
 		base.Load += frmOrdenServicio_Load;
 		base.FormClosing += frmOrdenServicio_FormClosing;
 		InitializeComponent();
+		CargarIconosFormulario();
+		campoPresupuesto = new CampoMonetario(txtPresupuesto);
+		campoAbono = new CampoMonetario(txtAbono);
+		txtPresupuesto.KeyUp += new KeyEventHandler(txtPresupuesto_KeyUp);
+		txtAbono.KeyUp += new KeyEventHandler(txtAbono_KeyUp);
+	}
+
+	private void CargarIconosFormulario()
+	{
+		ComponentResourceManager rm = new ComponentResourceManager(typeof(frmOrdenServicio));
+		btnNuevaOrden.Image = (Image)rm.GetObject("btnNuevaOrden.Image");
+		btnGuardar.Image = (Image)rm.GetObject("btnGuardar.Image");
+		btnImprimir.Image = (Image)rm.GetObject("btnImprimir.Image");
+		btnEliminarOrden.Image = (Image)rm.GetObject("btnEliminarOrden.Image");
+		btnBuscarOrden.Image = (Image)rm.GetObject("btnBuscarOrden.Image");
+		btnCondiciones.Image = (Image)rm.GetObject("btnCondiciones.Image");
+		btnConfiguracion.Image = (Image)rm.GetObject("btnConfiguracion.Image");
+		btnReporte.Image = (Image)rm.GetObject("btnReporte.Image");
+		btnBuscarCliente.Image = (Image)rm.GetObject("btnBuscarCliente.Image");
+		VER1.Image = (Image)rm.GetObject("VER1.Image");
+		VER2.Image = (Image)rm.GetObject("VER2.Image");
+		VER3.Image = (Image)rm.GetObject("VER3.Image");
+		Button1.BackgroundImage = (Image)rm.GetObject("Button1.BackgroundImage");
+		sinImagen.BackgroundImage = (Image)rm.GetObject("sinImagen.BackgroundImage");
+		picLogo.Image = (Image)rm.GetObject("picLogo.Image");
 	}
 
 	private void frmOrdenServicio_Resize(object sender, EventArgs e)
@@ -59,6 +84,7 @@ public partial class frmOrdenServicio : Form
 		NuevaOrden();
 		Timer1.Enabled = true;
 		CentrarPanel();
+		try { File.AppendAllText(Path.Combine(Application.StartupPath, "keylog.txt"), "=== INICIO PRUEBA DECIMAL ===\r\n"); } catch { }
 	}
 
 	private bool IsRunningFromCompressedFolder()
@@ -167,6 +193,19 @@ public partial class frmOrdenServicio : Form
 		string text2 = ManejarImagen(imgFoto1, text);
 		string text3 = ManejarImagen(imgFoto2, text);
 		string text4 = ManejarImagen(imgFoto3, text);
+		if (!FormatoMoneda.TryParseMonetarioPositivo(txtPresupuesto.Text, out decimal presupuesto))
+		{
+			Interaction.MsgBox("El presupuesto ingresado no es válido. Corrija el valor antes de guardar.", MsgBoxStyle.Exclamation, "Valor inválido");
+			txtPresupuesto.Focus();
+			return;
+		}
+		if (!FormatoMoneda.TryParseMonetarioPositivo(txtAbono.Text, out decimal abono))
+		{
+			Interaction.MsgBox("El abono ingresado no es válido. Corrija el valor antes de guardar.", MsgBoxStyle.Exclamation, "Valor inválido");
+			txtAbono.Focus();
+			return;
+		}
+		decimal total = presupuesto - abono;
 		string commandText = (flag ? "INSERT INTO ordenes (fecha, id_cliente, tipo_equipo, marca, modelo, imei, clave, accesorios, falla, observaciones, reparacion, estado_entrega, abono, presupuesto, total, imagen1, imagen2, imagen3, reparado, entregado) VALUES (@fecha, @cliente, @tipo, @marca, @modelo, @imei, @clave, @accesorios, @falla, @obs, @reparacion, @estado, @abono, @presupuesto, @total, @foto1, @foto2, @foto3, @reparado, @entregado)" : "UPDATE ordenes SET fecha=@fecha, id_cliente=@cliente, tipo_equipo=@tipo, marca=@marca, modelo=@modelo, imei=@imei, clave=@clave, accesorios=@accesorios, falla=@falla, observaciones=@obs, reparacion=@reparacion, estado_entrega=@estado, abono=@abono, presupuesto=@presupuesto, total=@total, imagen1=@foto1, imagen2=@foto2, imagen3=@foto3, reparado=@reparado, entregado=@entregado WHERE id_orden=@id");
 		using (SQLiteCommand sQLiteCommand3 = new SQLiteCommand(commandText, sQLiteConnection))
 		{
@@ -182,9 +221,9 @@ public partial class frmOrdenServicio : Form
 			sQLiteCommand3.Parameters.AddWithValue("@obs", txtObservaciones.Text);
 			sQLiteCommand3.Parameters.AddWithValue("@reparacion", txtReparacion.Text);
 			sQLiteCommand3.Parameters.AddWithValue("@estado", cmbEstadoEntrega.Text);
-			sQLiteCommand3.Parameters.AddWithValue("@abono", Conversion.Val(txtAbono.Text));
-			sQLiteCommand3.Parameters.AddWithValue("@presupuesto", Conversion.Val(txtPresupuesto.Text));
-			sQLiteCommand3.Parameters.AddWithValue("@total", Conversion.Val(txtTotal.Text));
+			sQLiteCommand3.Parameters.AddWithValue("@abono", abono);
+			sQLiteCommand3.Parameters.AddWithValue("@presupuesto", presupuesto);
+			sQLiteCommand3.Parameters.AddWithValue("@total", total);
 			sQLiteCommand3.Parameters.AddWithValue("@reparado", txtReparado.Text);
 			sQLiteCommand3.Parameters.AddWithValue("@entregado", txtEntregado.Text);
 			sQLiteCommand3.Parameters.AddWithValue("@foto1", RuntimeHelpers.GetObjectValue(string.IsNullOrEmpty(text2) ? ((IConvertible)DBNull.Value) : ((IConvertible)text2)));
@@ -382,19 +421,19 @@ public partial class frmOrdenServicio : Form
 				num4 += num5;
 				DibujarTextoMultilinea(e, "Estado: " + cmbEstadoEntrega.Text, num2, num4, num6);
 				num4 += ObtenerAlturaTexto(e, "Estado: " + cmbEstadoEntrega.Text, num6, fuenteTicket);
-				if (Conversion.Val(txtPresupuesto.Text) > 0.0)
+				if (FormatoMoneda.TryParseMonetario(txtPresupuesto.Text, out decimal presupuesto2) && presupuesto2 > 0m)
 				{
-					DibujarLineaAlineadaDerecha(e, "Presupuesto: $" + txtPresupuesto.Text, num6, num2, num4);
+					DibujarLineaAlineadaDerecha(e, "Presupuesto: " + FormatoMoneda.Formatear(presupuesto2), num6, num2, num4);
 					num4 += num5;
 				}
-				if (Conversion.Val(txtAbono.Text) > 0.0)
+				if (FormatoMoneda.TryParseMonetario(txtAbono.Text, out decimal abono2) && abono2 > 0m)
 				{
-					DibujarLineaAlineadaDerecha(e, "Abono: $" + txtAbono.Text, num6, num2, num4);
+					DibujarLineaAlineadaDerecha(e, "Abono: " + FormatoMoneda.Formatear(abono2), num6, num2, num4);
 					num4 += num5;
 				}
-				if (Conversion.Val(txtTotal.Text) > 0.0)
+				if (FormatoMoneda.TryParseMonetario(txtTotal.Text, out decimal total2) && total2 > 0m)
 				{
-					DibujarLineaAlineadaDerecha(e, "RESTA: $" + txtTotal.Text, num6, num2, num4);
+					DibujarLineaAlineadaDerecha(e, "RESTA: " + FormatoMoneda.Formatear(total2), num6, num2, num4);
 					num4 += num5;
 				}
 				if (flag)
@@ -565,19 +604,19 @@ public partial class frmOrdenServicio : Form
 					num3 += num4;
 					DibujarTextoMultilinea(e, "Estado: " + cmbEstadoEntrega.Text, num2, num3, num6);
 					num3 += ObtenerAlturaTexto(e, "Estado: " + cmbEstadoEntrega.Text, num6, fuenteTicket);
-					if (Conversion.Val(txtAbono.Text) > 0.0)
+					if (FormatoMoneda.TryParseMonetario(txtAbono.Text, out decimal abono3) && abono3 > 0m)
 					{
-						DibujarLineaAlineadaDerecha(e, "Abono: $" + txtAbono.Text, num6, num2, num3);
+						DibujarLineaAlineadaDerecha(e, "Abono: " + FormatoMoneda.Formatear(abono3), num6, num2, num3);
 						num3 += num4;
 					}
-					if (Conversion.Val(txtPresupuesto.Text) > 0.0)
+					if (FormatoMoneda.TryParseMonetario(txtPresupuesto.Text, out decimal presupuesto3) && presupuesto3 > 0m)
 					{
-						DibujarLineaAlineadaDerecha(e, "Presupuesto: $" + txtPresupuesto.Text, num6, num2, num3);
+						DibujarLineaAlineadaDerecha(e, "Presupuesto: " + FormatoMoneda.Formatear(presupuesto3), num6, num2, num3);
 						num3 += num4;
 					}
-					if (Conversion.Val(txtTotal.Text) > 0.0)
+					if (FormatoMoneda.TryParseMonetario(txtTotal.Text, out decimal total3) && total3 > 0m)
 					{
-						DibujarLineaAlineadaDerecha(e, "TOTAL: $" + txtTotal.Text, num6, num2, num3);
+						DibujarLineaAlineadaDerecha(e, "TOTAL: " + FormatoMoneda.Formatear(total3), num6, num2, num3);
 						num3 += num4;
 					}
 					DibujarLinea(e, new string('-', num), num2, num3);
@@ -1095,9 +1134,9 @@ public partial class frmOrdenServicio : Form
 				txtReparado.Text = sQLiteDataReader["reparado"].ToString();
 				txtEntregado.Text = sQLiteDataReader["entregado"].ToString();
 				cmbEstadoEntrega.Text = sQLiteDataReader["estado_entrega"].ToString();
-				txtAbono.Text = sQLiteDataReader["abono"].ToString();
-				txtPresupuesto.Text = sQLiteDataReader["presupuesto"].ToString();
-				txtTotal.Text = sQLiteDataReader["total"].ToString();
+				txtAbono.Text = FormatoMoneda.FormatearDesdeObjeto(sQLiteDataReader["abono"]);
+				txtPresupuesto.Text = FormatoMoneda.FormatearDesdeObjeto(sQLiteDataReader["presupuesto"]);
+				txtTotal.Text = FormatoMoneda.FormatearDesdeObjeto(sQLiteDataReader["total"]);
 				txtFecha.Text = Convert.ToDateTime(RuntimeHelpers.GetObjectValue(sQLiteDataReader["fecha"])).ToString("dd/MM/yyyy");
 				CargarImagen(sQLiteDataReader, "imagen1", imgFoto1);
 				CargarImagen(sQLiteDataReader, "imagen2", imgFoto2);
@@ -1165,6 +1204,7 @@ public partial class frmOrdenServicio : Form
 
 	private void frmOrdenServicio_FormClosing(object sender, FormClosingEventArgs e)
 	{
+		try { File.AppendAllText(Path.Combine(Application.StartupPath, "keylog.txt"), "=== FIN PRUEBA DECIMAL ===\r\n"); } catch { }
 		if (fuenteTicket != null)
 		{
 			fuenteTicket.Dispose();
@@ -1198,23 +1238,26 @@ public partial class frmOrdenServicio : Form
 
 	private void txtPresupuesto_TextChanged(object sender, EventArgs e)
 	{
+		campoPresupuesto.AlTextChanged();
 		calcula();
 	}
 
 	private void txtAbono_TextChanged(object sender, EventArgs e)
 	{
+		campoAbono.AlTextChanged();
 		calcula();
 	}
 
 	public void calcula()
 	{
-		if (double.TryParse(txtPresupuesto.Text, out var result) && double.TryParse(txtAbono.Text, out var result2))
+		if (FormatoMoneda.TryParseMonetario(txtPresupuesto.Text, out decimal presupuesto) && FormatoMoneda.TryParseMonetario(txtAbono.Text, out decimal abono))
 		{
-			txtTotal.Text = (result - result2).ToString();
+			decimal num = presupuesto - abono;
+			txtTotal.Text = FormatoMoneda.Formatear(num);
 		}
 		else
 		{
-			txtTotal.Text = "0";
+			txtTotal.Text = FormatoMoneda.Formatear(0m);
 		}
 	}
 
@@ -1360,6 +1403,399 @@ public partial class frmOrdenServicio : Form
 			Interaction.MsgBox("Gracias por usar este Software, Esta es la Versión Gratuita!, **En la paga quita este cartel y le colocamos logo y nombre de taller**");
 			ProjectData.EndApp();
 			ProjectData.ClearProjectError();
+		}
+	}
+
+	private readonly CampoMonetario campoPresupuesto;
+
+	private readonly CampoMonetario campoAbono;
+
+	private void txtPresupuesto_Enter(object sender, EventArgs e)
+	{
+		campoPresupuesto.AlEntrar();
+	}
+
+	private void txtAbono_Enter(object sender, EventArgs e)
+	{
+		campoAbono.AlEntrar();
+	}
+
+	private void txtPresupuesto_KeyDown(object sender, KeyEventArgs e)
+	{
+		campoPresupuesto.AlKeyDown(e);
+	}
+
+	private void txtAbono_KeyDown(object sender, KeyEventArgs e)
+	{
+		campoAbono.AlKeyDown(e);
+	}
+
+	private void txtPresupuesto_KeyPress(object sender, KeyPressEventArgs e)
+	{
+		campoPresupuesto.AlKeyPress(e);
+	}
+
+	private void txtAbono_KeyPress(object sender, KeyPressEventArgs e)
+	{
+		campoAbono.AlKeyPress(e);
+	}
+
+	private void txtPresupuesto_KeyUp(object sender, KeyEventArgs e)
+	{
+		campoPresupuesto.AlKeyUp(e);
+	}
+
+	private void txtAbono_KeyUp(object sender, KeyEventArgs e)
+	{
+		campoAbono.AlKeyUp(e);
+	}
+
+	private void txtPresupuesto_Validating(object sender, CancelEventArgs e)
+	{
+		if (!FormatoMoneda.TryParseMonetarioPositivo(txtPresupuesto.Text, out _))
+		{
+			Interaction.MsgBox("El presupuesto ingresado no es válido.", MsgBoxStyle.Exclamation, "Valor inválido");
+			e.Cancel = true;
+		}
+	}
+
+	private void txtAbono_Validating(object sender, CancelEventArgs e)
+	{
+		if (!FormatoMoneda.TryParseMonetarioPositivo(txtAbono.Text, out _))
+		{
+			Interaction.MsgBox("El abono ingresado no es válido.", MsgBoxStyle.Exclamation, "Valor inválido");
+			e.Cancel = true;
+		}
+	}
+
+	private void txtPresupuesto_Validated(object sender, EventArgs e)
+	{
+		if (FormatoMoneda.TryParseMonetarioPositivo(txtPresupuesto.Text, out decimal valor))
+		{
+			txtPresupuesto.Text = FormatoMoneda.Formatear(valor);
+		}
+	}
+
+	private void txtAbono_Validated(object sender, EventArgs e)
+	{
+		if (FormatoMoneda.TryParseMonetarioPositivo(txtAbono.Text, out decimal valor))
+		{
+			txtAbono.Text = FormatoMoneda.Formatear(valor);
+		}
+	}
+
+	private sealed class CampoMonetario
+	{
+		private readonly TextBox caja;
+
+		private readonly MotorOrigenEdicion motor;
+
+		private bool normalizando;
+
+		private string ultimoValido = "";
+
+		private int ultimoCaret;
+
+		private static void LogKey(string evento, string datos)
+		{
+			try
+			{
+				File.AppendAllText(
+					Path.Combine(Application.StartupPath, "keylog.txt"),
+					"[" + DateTime.Now.ToString("HH:mm:ss.fff") + "] " + evento + ": " + datos + "\r\n");
+			}
+			catch { }
+		}
+
+		public CampoMonetario(TextBox caja)
+		{
+			this.caja = caja;
+			motor = new MotorOrigenEdicion();
+		}
+
+		public void AlEntrar()
+		{
+			motor.Reiniciar();
+			if (FormatoMoneda.TryParseMonetario(caja.Text, out decimal valor))
+			{
+				Asignar(FormatoMoneda.FormatearParaEdicion(valor));
+			}
+			ultimoValido = caja.Text;
+			ultimoCaret = caja.SelectionStart;
+			caja.BeginInvoke(new Action(() => caja.SelectAll()));
+		}
+
+		public void AlKeyDown(KeyEventArgs e)
+		{
+			LogKey("KeyDown", "ctrl=" + caja.Name + " KeyCode=" + e.KeyCode + "(" + (int)e.KeyCode + ") KeyValue=" + e.KeyValue + " Mod=" + e.Modifiers + " Ctrl=" + e.Control + " Shift=" + e.Shift + " Alt=" + e.Alt + " Handled=" + e.Handled + " Suppress=" + e.SuppressKeyPress + " Text=\"" + caja.Text + "\" SelStart=" + caja.SelectionStart + " SelLen=" + caja.SelectionLength + " Origen=" + motor.Origen);
+
+			bool mutacionConfirmada = false;
+
+			if (e.Control && !e.Alt && e.KeyCode == Keys.X)
+			{
+				if (caja.SelectionLength > 0)
+				{
+					if (FormatoMoneda.EsEliminacionInseguraDeComa(caja.Text, caja.SelectionStart, caja.SelectionLength))
+					{
+						e.Handled = true;
+					}
+					else
+					{
+						mutacionConfirmada = true;
+					}
+				}
+			}
+			else if (!e.Control && !e.Alt && (e.KeyCode == Keys.Back || e.KeyCode == Keys.Delete))
+			{
+				int inicio;
+				int longitud;
+				if (caja.SelectionLength > 0)
+				{
+					inicio = caja.SelectionStart;
+					longitud = caja.SelectionLength;
+				}
+				else if (e.KeyCode == Keys.Back)
+				{
+					inicio = caja.SelectionStart - 1;
+					longitud = 1;
+				}
+				else
+				{
+					inicio = caja.SelectionStart;
+					longitud = 1;
+				}
+
+				if (inicio >= 0 && longitud > 0 && inicio + longitud <= caja.Text.Length)
+				{
+					if (FormatoMoneda.EsEliminacionInseguraDeComa(caja.Text, inicio, longitud))
+					{
+						e.Handled = true;
+					}
+					else
+					{
+						mutacionConfirmada = true;
+					}
+				}
+			}
+
+			else if (!e.Control && !e.Alt && e.KeyCode == Keys.Decimal)
+			{
+				InsertarComaDecimal(e);
+				return;
+			}
+
+			motor.ProcesarKeyDown(mutacionConfirmada);
+		}
+
+		private void InsertarComaDecimal(KeyEventArgs e)
+		{
+			if (!FormatoMoneda.EsInsercionValida(caja.Text, caja.SelectionStart, caja.SelectionLength, ','))
+			{
+				e.Handled = true;
+				return;
+			}
+
+			int inicio = caja.SelectionStart;
+			int longitud = caja.SelectionLength;
+			string texto = caja.Text;
+
+			string crudo = texto.Remove(inicio, longitud).Insert(inicio, ",");
+			string agrupado = FormatoMoneda.AgruparEdicion(crudo);
+
+			int caret = 0;
+			int comaIdx = crudo.IndexOf(',');
+			if (comaIdx >= 0 && inicio + 1 >= comaIdx)
+			{
+				int decimalesAntes = 0;
+				for (int i = comaIdx + 1; i < inicio + 1 && i < crudo.Length; i++)
+				{
+					if (crudo[i] >= '0' && crudo[i] <= '9')
+						decimalesAntes++;
+				}
+
+				int comaAgrupada = agrupado.IndexOf(',');
+				if (comaAgrupada < 0)
+					caret = agrupado.Length;
+				else
+				{
+					caret = comaAgrupada + 1;
+					int vistos = 0;
+					while (caret < agrupado.Length && vistos < decimalesAntes)
+					{
+						caret++;
+						vistos++;
+					}
+				}
+			}
+			else
+			{
+				int enterosAntes = 0;
+				for (int i = 0; i < inicio; i++)
+				{
+					if (comaIdx >= 0 && i == comaIdx)
+						break;
+					if (texto[i] >= '0' && texto[i] <= '9')
+						enterosAntes++;
+				}
+
+				int comaAgrupada = agrupado.IndexOf(',');
+				int pos = 0;
+				int vistos = 0;
+				while (pos < agrupado.Length)
+				{
+					if (comaAgrupada >= 0 && pos == comaAgrupada)
+						break;
+					char c = agrupado[pos];
+					if (c >= '0' && c <= '9')
+					{
+						if (vistos == enterosAntes)
+							break;
+						vistos++;
+					}
+					pos++;
+				}
+				caret = pos;
+			}
+
+			motor.ProcesarKeyDown(true);
+			Asignar(agrupado);
+			caja.SelectionStart = caret;
+			caja.SelectionLength = 0;
+
+			e.Handled = true;
+			e.SuppressKeyPress = true;
+		}
+
+		public void AlKeyPress(KeyPressEventArgs e)
+		{
+			LogKey("KeyPress", "ctrl=" + caja.Name + " KeyChar='" + e.KeyChar + "' dec=" + (int)e.KeyChar + " hex=0x" + ((int)e.KeyChar).ToString("X2") + " Handled=" + e.Handled + " Text=\"" + caja.Text + "\" SelStart=" + caja.SelectionStart + " SelLen=" + caja.SelectionLength + " Origen=" + motor.Origen);
+
+			char c = e.KeyChar;
+			if (c < ' ')
+				return;
+
+			bool aceptado = FormatoMoneda.EsInsercionValida(caja.Text, caja.SelectionStart, caja.SelectionLength, c);
+			motor.ProcesarKeyPress(c, aceptado);
+			if (!aceptado)
+			{
+				e.Handled = true;
+				return;
+			}
+
+			if (c == '.')
+				e.KeyChar = ',';
+		}
+
+		public void AlKeyUp(KeyEventArgs e)
+		{
+			LogKey("KeyUp", "ctrl=" + caja.Name + " KeyCode=" + e.KeyCode + "(" + (int)e.KeyCode + ") Text=\"" + caja.Text + "\" SelStart=" + caja.SelectionStart + " SelLen=" + caja.SelectionLength);
+		}
+
+		public void AlTextChanged()
+		{
+			if (normalizando || !caja.Focused)
+				return;
+
+			if (motor.ConsumirTextChanged() == OrigenEdicion.Teclado)
+			{
+				string crudo = caja.Text;
+				string nuevo = FormatoMoneda.AgruparEdicion(crudo);
+				if (nuevo != crudo)
+				{
+					int caret = CalcularCaret(crudo, caja.SelectionStart, nuevo);
+					Asignar(nuevo);
+					caja.SelectionStart = caret;
+					caja.SelectionLength = 0;
+				}
+			}
+			else if (FormatoMoneda.TryNormalizarEdicion(caja.Text, out string edicion))
+			{
+				Asignar(edicion);
+				caja.SelectionStart = edicion.Length;
+				caja.SelectionLength = 0;
+			}
+			else
+			{
+				Asignar(ultimoValido);
+				caja.SelectionStart = Math.Min(ultimoCaret, ultimoValido.Length);
+				caja.SelectionLength = 0;
+			}
+
+			ultimoValido = caja.Text;
+			ultimoCaret = caja.SelectionStart;
+		}
+
+		private void Asignar(string texto)
+		{
+			normalizando = true;
+			try
+			{
+				caja.Text = texto;
+			}
+			finally
+			{
+				normalizando = false;
+			}
+		}
+
+		private static int CalcularCaret(string crudo, int caret, string nuevo)
+		{
+			if (caret < 0)
+				caret = 0;
+			if (caret > crudo.Length)
+				caret = crudo.Length;
+
+			int comaCrudo = crudo.IndexOf(',');
+
+			if (comaCrudo >= 0 && caret > comaCrudo)
+			{
+				int decimalesAntes = 0;
+				for (int i = comaCrudo + 1; i < caret && i < crudo.Length; i++)
+				{
+					if (crudo[i] >= '0' && crudo[i] <= '9')
+						decimalesAntes++;
+				}
+
+				int comaNuevo = nuevo.IndexOf(',');
+				if (comaNuevo < 0)
+					return nuevo.Length;
+
+				int posicion = comaNuevo + 1;
+				int vistos = 0;
+				while (posicion < nuevo.Length && vistos < decimalesAntes)
+				{
+					posicion++;
+					vistos++;
+				}
+				return posicion;
+			}
+
+			int enterosAntes = 0;
+			for (int i = 0; i < caret; i++)
+			{
+				if (comaCrudo >= 0 && i == comaCrudo)
+					break;
+				if (crudo[i] >= '0' && crudo[i] <= '9')
+					enterosAntes++;
+			}
+
+			int comaNuevoEntero = nuevo.IndexOf(',');
+			int posicionEntera = 0;
+			int vistosEnteros = 0;
+			while (posicionEntera < nuevo.Length)
+			{
+				if (comaNuevoEntero >= 0 && posicionEntera == comaNuevoEntero)
+					break;
+				char c = nuevo[posicionEntera];
+				if (c >= '0' && c <= '9')
+				{
+					if (vistosEnteros == enterosAntes)
+						break;
+					vistosEnteros++;
+				}
+				posicionEntera++;
+			}
+			return posicionEntera;
 		}
 	}
 }

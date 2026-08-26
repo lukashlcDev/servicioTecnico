@@ -9,7 +9,7 @@ internal static class Program
 	private static int Main()
 	{
 		Console.WriteLine("Host de pruebas ServicioTecnico.Tests");
-		Console.WriteLine("Casos: FUN-041, FUN-042, FUN-043");
+		Console.WriteLine("Casos: FUN-041, FUN-042, FUN-043, FUN-FMT-001..007");
 		Console.WriteLine("Entorno: Windows / x86 / .NET Framework 4.0");
 		Console.WriteLine();
 
@@ -17,6 +17,13 @@ internal static class Program
 		resultados.Add(Ejecutar("FUN-041", TestsModConexion.FUN_041));
 		resultados.Add(Ejecutar("FUN-042", TestsModConexion.FUN_042));
 		resultados.Add(Ejecutar("FUN-043", TestsModConexion.FUN_043));
+		resultados.Add(Ejecutar("FUN-FMT-001", TestsFormatoMoneda.FUN_FMT_001));
+		resultados.Add(Ejecutar("FUN-FMT-002", TestsFormatoMoneda.FUN_FMT_002));
+		resultados.Add(Ejecutar("FUN-FMT-003", TestsFormatoMoneda.FUN_FMT_003));
+		resultados.Add(Ejecutar("FUN-FMT-004", TestsFormatoMoneda.FUN_FMT_004));
+		resultados.Add(Ejecutar("FUN-FMT-005", TestsFormatoMoneda.FUN_FMT_005));
+		resultados.Add(Ejecutar("FUN-FMT-006", TestsFormatoMoneda.FUN_FMT_006));
+		resultados.Add(Ejecutar("FUN-FMT-007", TestsFormatoMoneda.FUN_FMT_007));
 
 		Console.WriteLine();
 		Console.WriteLine("=== RESUMEN ===");
