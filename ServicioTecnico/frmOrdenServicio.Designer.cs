@@ -70,11 +70,9 @@ public partial class frmOrdenServicio : Form
 	internal Button btnConfiguracion;
 	internal Button btnReporte;
 	internal GroupBox grpTipoEquipo;
-	internal TextBox txtOtros;
-	internal RadioButton rbtnOtros;
-	internal RadioButton rbtnPC;
-	internal RadioButton rbtnImpresora;
-	internal RadioButton rbtnLaptop;
+	internal ComboBox cmbTipoEquipo;
+	internal Label lblEspecificar;
+	internal TextBox txtNuevoTipoEquipo;
 	internal Button Button1;
 	internal PictureBox sinImagen;
 	internal Button VER1;
@@ -170,11 +168,9 @@ public partial class frmOrdenServicio : Form
             this.btnConfiguracion = new System.Windows.Forms.Button();
             this.btnReporte = new System.Windows.Forms.Button();
             this.grpTipoEquipo = new System.Windows.Forms.GroupBox();
-            this.txtOtros = new System.Windows.Forms.TextBox();
-            this.rbtnOtros = new System.Windows.Forms.RadioButton();
-            this.rbtnPC = new System.Windows.Forms.RadioButton();
-            this.rbtnImpresora = new System.Windows.Forms.RadioButton();
-            this.rbtnLaptop = new System.Windows.Forms.RadioButton();
+            this.cmbTipoEquipo = new System.Windows.Forms.ComboBox();
+            this.lblEspecificar = new System.Windows.Forms.Label();
+            this.txtNuevoTipoEquipo = new System.Windows.Forms.TextBox();
             this.Timer1 = new System.Windows.Forms.Timer(this.components);
             this.licencia = new System.Windows.Forms.Timer(this.components);
             this.Panel1.SuspendLayout();
@@ -886,11 +882,9 @@ public partial class frmOrdenServicio : Form
             // 
             // grpTipoEquipo
             // 
-            this.grpTipoEquipo.Controls.Add(this.txtOtros);
-            this.grpTipoEquipo.Controls.Add(this.rbtnOtros);
-            this.grpTipoEquipo.Controls.Add(this.rbtnPC);
-            this.grpTipoEquipo.Controls.Add(this.rbtnImpresora);
-            this.grpTipoEquipo.Controls.Add(this.rbtnLaptop);
+            this.grpTipoEquipo.Controls.Add(this.txtNuevoTipoEquipo);
+            this.grpTipoEquipo.Controls.Add(this.lblEspecificar);
+            this.grpTipoEquipo.Controls.Add(this.cmbTipoEquipo);
             this.grpTipoEquipo.Location = new System.Drawing.Point(16, 190);
             this.grpTipoEquipo.Name = "grpTipoEquipo";
             this.grpTipoEquipo.Size = new System.Drawing.Size(663, 54);
@@ -898,44 +892,33 @@ public partial class frmOrdenServicio : Form
             this.grpTipoEquipo.TabStop = false;
             this.grpTipoEquipo.Text = "Tipo de equipo";
             // 
-            // txtOtros
+            // cmbTipoEquipo
             // 
-            this.txtOtros.Location = new System.Drawing.Point(363, 18);
-            this.txtOtros.Name = "txtOtros";
-            this.txtOtros.Size = new System.Drawing.Size(289, 20);
-            this.txtOtros.TabIndex = 8;
+            this.cmbTipoEquipo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbTipoEquipo.FormattingEnabled = true;
+            this.cmbTipoEquipo.Location = new System.Drawing.Point(30, 18);
+            this.cmbTipoEquipo.Name = "cmbTipoEquipo";
+            this.cmbTipoEquipo.Size = new System.Drawing.Size(430, 21);
+            this.cmbTipoEquipo.TabIndex = 4;
+            this.cmbTipoEquipo.SelectedIndexChanged += new System.EventHandler(this.cmbTipoEquipo_SelectedIndexChanged);
             // 
-            // rbtnOtros
+            // lblEspecificar
             // 
-            this.rbtnOtros.Location = new System.Drawing.Point(301, 16);
-            this.rbtnOtros.Name = "rbtnOtros";
-            this.rbtnOtros.Size = new System.Drawing.Size(54, 24);
-            this.rbtnOtros.TabIndex = 7;
-            this.rbtnOtros.Text = "Otro";
+            this.lblEspecificar.AutoSize = true;
+            this.lblEspecificar.Location = new System.Drawing.Point(470, 22);
+            this.lblEspecificar.Name = "lblEspecificar";
+            this.lblEspecificar.Size = new System.Drawing.Size(63, 13);
+            this.lblEspecificar.TabIndex = 5;
+            this.lblEspecificar.Text = "Especificar:";
+            this.lblEspecificar.Visible = false;
             // 
-            // rbtnPC
+            // txtNuevoTipoEquipo
             // 
-            this.rbtnPC.Location = new System.Drawing.Point(223, 16);
-            this.rbtnPC.Name = "rbtnPC";
-            this.rbtnPC.Size = new System.Drawing.Size(59, 24);
-            this.rbtnPC.TabIndex = 6;
-            this.rbtnPC.Text = "PC";
-            // 
-            // rbtnImpresora
-            // 
-            this.rbtnImpresora.Location = new System.Drawing.Point(126, 16);
-            this.rbtnImpresora.Name = "rbtnImpresora";
-            this.rbtnImpresora.Size = new System.Drawing.Size(86, 24);
-            this.rbtnImpresora.TabIndex = 5;
-            this.rbtnImpresora.Text = "Impresora";
-            // 
-            // rbtnLaptop
-            // 
-            this.rbtnLaptop.Location = new System.Drawing.Point(30, 17);
-            this.rbtnLaptop.Name = "rbtnLaptop";
-            this.rbtnLaptop.Size = new System.Drawing.Size(81, 24);
-            this.rbtnLaptop.TabIndex = 4;
-            this.rbtnLaptop.Text = "Laptop";
+            this.txtNuevoTipoEquipo.Location = new System.Drawing.Point(540, 18);
+            this.txtNuevoTipoEquipo.Name = "txtNuevoTipoEquipo";
+            this.txtNuevoTipoEquipo.Size = new System.Drawing.Size(110, 20);
+            this.txtNuevoTipoEquipo.TabIndex = 6;
+            this.txtNuevoTipoEquipo.Visible = false;
             // 
             // Timer1
             // 

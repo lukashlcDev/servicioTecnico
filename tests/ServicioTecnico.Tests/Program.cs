@@ -9,7 +9,7 @@ internal static class Program
 	private static int Main()
 	{
 		Console.WriteLine("Host de pruebas ServicioTecnico.Tests");
-		Console.WriteLine("Casos: FUN-041, FUN-042, FUN-043, FUN-FMT-001..007");
+		Console.WriteLine("Casos: FUN-041..044, FUN-FMT-001..007, HELPER-001..004, QUICK-001/006/007, ORDER-001..003, CFG-INIT-001, CFG-FOCUS-001, CFG-LAYOUT-001, CFG-FONT-001");
 		Console.WriteLine("Entorno: Windows / x86 / .NET Framework 4.0");
 		Console.WriteLine();
 
@@ -17,6 +17,21 @@ internal static class Program
 		resultados.Add(Ejecutar("FUN-041", TestsModConexion.FUN_041));
 		resultados.Add(Ejecutar("FUN-042", TestsModConexion.FUN_042));
 		resultados.Add(Ejecutar("FUN-043", TestsModConexion.FUN_043));
+		resultados.Add(Ejecutar("FUN-044", TestsModConexion.FUN_044));
+		resultados.Add(Ejecutar("HELPER-001", TestsTipoEquipo.HELPER_001));
+		resultados.Add(Ejecutar("HELPER-002", TestsTipoEquipo.HELPER_002));
+		resultados.Add(Ejecutar("HELPER-003", TestsTipoEquipo.HELPER_003));
+		resultados.Add(Ejecutar("HELPER-004", TestsTipoEquipo.HELPER_004));
+		resultados.Add(Ejecutar("QUICK-001", TestsTipoEquipo.QUICK_001));
+		resultados.Add(Ejecutar("QUICK-006", TestsTipoEquipo.QUICK_006));
+		resultados.Add(Ejecutar("QUICK-007", TestsTipoEquipo.QUICK_007));
+		resultados.Add(Ejecutar("ORDER-001", TestsTipoEquipo.ORDER_001));
+		resultados.Add(Ejecutar("ORDER-002", TestsTipoEquipo.ORDER_002));
+		resultados.Add(Ejecutar("ORDER-003", TestsTipoEquipo.ORDER_003));
+		resultados.Add(Ejecutar("CFG-INIT-001", TestsConfiguracion.CFG_INIT_001));
+		resultados.Add(Ejecutar("CFG-FOCUS-001", TestsConfiguracion.CFG_FOCUS_001));
+		resultados.Add(Ejecutar("CFG-LAYOUT-001", TestsConfiguracion.CFG_LAYOUT_001));
+		resultados.Add(Ejecutar("CFG-FONT-001", TestsConfiguracion.CFG_FONT_001));
 		resultados.Add(Ejecutar("FUN-FMT-001", TestsFormatoMoneda.FUN_FMT_001));
 		resultados.Add(Ejecutar("FUN-FMT-002", TestsFormatoMoneda.FUN_FMT_002));
 		resultados.Add(Ejecutar("FUN-FMT-003", TestsFormatoMoneda.FUN_FMT_003));

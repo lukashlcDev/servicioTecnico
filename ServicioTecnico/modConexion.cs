@@ -16,13 +16,36 @@ internal sealed class modConexion
 
 	public static void VerificarOCrearBD()
 	{
-		bool flag = !File.Exists(rutaDB);
+		bool dbNueva = !File.Exists(rutaDB);
 		conexion = new SQLiteConnection("Data Source=" + rutaDB + ";Version=3;");
-		if (flag)
+		bool existiaTiposEquipo = ExisteTabla("tipos_equipo");
+		CrearTablas();
+		if (dbNueva)
 		{
-			CrearTablas();
 			InsertarDatosIniciales();
 		}
+		if (!existiaTiposEquipo)
+		{
+			InsertarTiposEquipoIniciales();
+		}
+	}
+
+	private static bool ExisteTabla(string nombre)
+	{
+		if (!File.Exists(rutaDB))
+		{
+			return false;
+		}
+		using SQLiteConnection sQLiteConnection = new SQLiteConnection("Data Source=" + rutaDB + ";Version=3;");
+		sQLiteConnection.Open();
+		bool result;
+		using (SQLiteCommand sQLiteCommand = new SQLiteCommand("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=@nombre", sQLiteConnection))
+		{
+			sQLiteCommand.Parameters.AddWithValue("@nombre", nombre);
+			result = Conversions.ToLong(sQLiteCommand.ExecuteScalar()) > 0L;
+		}
+		sQLiteConnection.Close();
+		return result;
 	}
 
 	public static void CrearTablas()
@@ -33,6 +56,7 @@ internal sealed class modConexion
 		list.Add("CREATE TABLE IF NOT EXISTS ordenes (id_orden INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, id_cliente INTEGER, tipo_equipo TEXT, marca TEXT, modelo TEXT, imei TEXT, clave TEXT, accesorios TEXT, falla TEXT, observaciones TEXT, reparacion TEXT, abono REAL, reparado TEXT, entregado TEXT, presupuesto REAL, total REAL, estado_entrega TEXT, imagen1 TEXT, imagen2 TEXT, imagen3 TEXT, FOREIGN KEY(id_cliente) REFERENCES clientes(id_cliente))");
 		list.Add("CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)");
 		list.Add("CREATE TABLE IF NOT EXISTS estados (id_estado INTEGER PRIMARY KEY AUTOINCREMENT, descripcion TEXT)");
+		list.Add("CREATE TABLE IF NOT EXISTS tipos_equipo (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL UNIQUE, activo INTEGER NOT NULL DEFAULT 1, orden_visual INTEGER NOT NULL DEFAULT 0)");
 		using SQLiteConnection sQLiteConnection = new SQLiteConnection("Data Source=" + rutaDB + ";Version=3;");
 		sQLiteConnection.Open();
 		using (SQLiteCommand sQLiteCommand = new SQLiteCommand())
@@ -62,6 +86,28 @@ internal sealed class modConexion
 				sQLiteCommand.Parameters.Clear();
 				sQLiteCommand.Parameters.AddWithValue("@clave", item.Key);
 				sQLiteCommand.Parameters.AddWithValue("@valor", item.Value);
+				sQLiteCommand.ExecuteNonQuery();
+			}
+		}
+		sQLiteConnection.Close();
+	}
+
+	private static void InsertarTiposEquipoIniciales()
+	{
+		using SQLiteConnection sQLiteConnection = new SQLiteConnection("Data Source=" + rutaDB + ";Version=3;");
+		sQLiteConnection.Open();
+		Dictionary<string, int> dictionary = new Dictionary<string, int>();
+		dictionary.Add("Laptop", 1);
+		dictionary.Add("Impresora", 2);
+		dictionary.Add("PC", 3);
+		dictionary.Add("Otros", 4);
+		using (SQLiteCommand sQLiteCommand = new SQLiteCommand("INSERT OR IGNORE INTO tipos_equipo (nombre, activo, orden_visual) VALUES (@nombre, 1, @orden_visual)", sQLiteConnection))
+		{
+			foreach (KeyValuePair<string, int> item in dictionary)
+			{
+				sQLiteCommand.Parameters.Clear();
+				sQLiteCommand.Parameters.AddWithValue("@nombre", item.Key);
+				sQLiteCommand.Parameters.AddWithValue("@orden_visual", item.Value);
 				sQLiteCommand.ExecuteNonQuery();
 			}
 		}

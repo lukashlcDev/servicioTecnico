@@ -71,7 +71,7 @@ internal static class TestsModConexion
 			}
 
 			string[] tablas = ObtenerTablas(rutaDB);
-			string[] esperadas = new string[] { "clientes", "condiciones_servicio", "configuracion", "estados", "ordenes" };
+			string[] esperadas = new string[] { "clientes", "condiciones_servicio", "configuracion", "estados", "ordenes", "tipos_equipo" };
 			if (!ConjuntosIguales(tablas, esperadas))
 			{
 				return Fail("Tablas esperadas: [" + string.Join(", ", esperadas) + "] - obtenidas: [" + string.Join(", ", tablas) + "]");
@@ -93,9 +93,9 @@ internal static class TestsModConexion
 			}
 
 			string[] tablas2 = ObtenerTablas(rutaDB);
-			if (tablas2.Length != 5)
+			if (!ConjuntosIguales(tablas2, esperadas))
 			{
-				return Fail("Las tablas dejaron de existir tras la segunda VerificarOCrearBD");
+				return Fail("Las tablas cambiaron tras la segunda VerificarOCrearBD. Esperadas: [" + string.Join(", ", esperadas) + "] - obtenidas: [" + string.Join(", ", tablas2) + "]");
 			}
 
 			TestResult r = new TestResult();
@@ -115,6 +115,127 @@ internal static class TestsModConexion
 		r.Ok = false;
 		r.Detalle = detalle;
 		return r;
+	}
+
+	public static TestResult FUN_044()
+	{
+		string dir = TempDatabase.CrearDirectorio();
+		try
+		{
+			string rutaDB = Path.Combine(dir, "ordenes.db");
+			ReflectionModConexion.SetRutaDB(rutaDB);
+			ReflectionModConexion.VerificarOCrearBD();
+
+			if (!File.Exists(rutaDB))
+			{
+				return Fail("No se creo el archivo ordenes.db en " + rutaDB);
+			}
+
+			string[] columnas = ObtenerColumnasTiposEquipo(rutaDB);
+			string[] esperadasColumnas = new string[] { "activo", "id", "nombre", "orden_visual" };
+			if (!ConjuntosIguales(columnas, esperadasColumnas))
+			{
+				return Fail("Columnas de tipos_equipo esperadas: [" + string.Join(", ", esperadasColumnas) + "] - obtenidas: [" + string.Join(", ", columnas) + "]");
+			}
+
+			string[] seed = ObtenerTiposEquipoSeed(rutaDB);
+			string[] esperadoSeed = new string[] { "Laptop:1:1", "Impresora:1:2", "PC:1:3", "Otros:1:4" };
+			if (!ConjuntosIguales(seed, esperadoSeed))
+			{
+				return Fail("Seed de tipos_equipo esperado: [" + string.Join(", ", esperadoSeed) + "] - obtenido: [" + string.Join(", ", seed) + "]");
+			}
+
+			if (TieneFKDesdeOrdenes(rutaDB))
+			{
+				return Fail("Se encontro una FK desde ordenes hacia tipos_equipo");
+			}
+
+			ReflectionModConexion.VerificarOCrearBD();
+
+			string[] seed2 = ObtenerTiposEquipoSeed(rutaDB);
+			int totalFilas = seed2.Length;
+			if (totalFilas != 4)
+			{
+				return Fail("La segunda VerificarOCrearBD duplico el seed: se esperaban 4 filas, hay " + totalFilas);
+			}
+			if (!ConjuntosIguales(seed2, esperadoSeed))
+			{
+				return Fail("El seed cambio tras la segunda VerificarOCrearBD: [" + string.Join(", ", seed2) + "]");
+			}
+
+			TestResult r = new TestResult();
+			r.Ok = true;
+			r.Detalle = "";
+			return r;
+		}
+		finally
+		{
+			ReflectionModConexion.VerificarOCrearBD();
+			TempDatabase.Eliminar(dir);
+		}
+	}
+
+	private static string[] ObtenerColumnasTiposEquipo(string rutaDB)
+	{
+		List<string> lista = new List<string>();
+		using (SQLiteConnection c = new SQLiteConnection("Data Source=" + rutaDB + ";Version=3;"))
+		{
+			c.Open();
+			using (SQLiteCommand cmd = new SQLiteCommand("PRAGMA table_info(tipos_equipo);", c))
+			{
+				using (SQLiteDataReader rd = cmd.ExecuteReader())
+				{
+					while (rd.Read())
+					{
+						lista.Add(rd.GetString(1));
+					}
+				}
+			}
+		}
+		return lista.ToArray();
+	}
+
+	private static string[] ObtenerTiposEquipoSeed(string rutaDB)
+	{
+		List<string> lista = new List<string>();
+		using (SQLiteConnection c = new SQLiteConnection("Data Source=" + rutaDB + ";Version=3;"))
+		{
+			c.Open();
+			using (SQLiteCommand cmd = new SQLiteCommand("SELECT nombre, activo, orden_visual FROM tipos_equipo ORDER BY orden_visual, nombre", c))
+			{
+				using (SQLiteDataReader rd = cmd.ExecuteReader())
+				{
+					while (rd.Read())
+					{
+						lista.Add(rd.GetString(0) + ":" + rd.GetInt32(1) + ":" + rd.GetInt32(2));
+					}
+				}
+			}
+		}
+		return lista.ToArray();
+	}
+
+	private static bool TieneFKDesdeOrdenes(string rutaDB)
+	{
+		using (SQLiteConnection c = new SQLiteConnection("Data Source=" + rutaDB + ";Version=3;"))
+		{
+			c.Open();
+			using (SQLiteCommand cmd = new SQLiteCommand("PRAGMA foreign_key_list(ordenes);", c))
+			{
+				using (SQLiteDataReader rd = cmd.ExecuteReader())
+				{
+					while (rd.Read())
+					{
+						string tabla = rd["table"].ToString();
+						if (string.Equals(tabla, "tipos_equipo", StringComparison.OrdinalIgnoreCase))
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private static string[] ObtenerTablas(string rutaDB)

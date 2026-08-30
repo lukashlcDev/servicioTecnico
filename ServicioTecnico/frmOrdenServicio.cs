@@ -5,9 +5,11 @@ using System.Data;
 using System.Data.SQLite;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows.Forms;
 using BarcodeLib;
 using Microsoft.VisualBasic;
@@ -19,6 +21,7 @@ public partial class frmOrdenServicio : Form
 {
 
 	private Font fuenteTicket;
+	private bool cargandoTiposEquipo;
 
 	public frmOrdenServicio()
 	{
@@ -29,8 +32,6 @@ public partial class frmOrdenServicio : Form
 		CargarIconosFormulario();
 		campoPresupuesto = new CampoMonetario(txtPresupuesto);
 		campoAbono = new CampoMonetario(txtAbono);
-		txtPresupuesto.KeyUp += new KeyEventHandler(txtPresupuesto_KeyUp);
-		txtAbono.KeyUp += new KeyEventHandler(txtAbono_KeyUp);
 	}
 
 	private void CargarIconosFormulario()
@@ -79,12 +80,12 @@ public partial class frmOrdenServicio : Form
 		}
 		CheckRequiredFiles();
 		modConexion.VerificarOCrearBD();
+		CargarTiposEquipo();
 		fuenteTicket = new Font("Courier New", 9f);
 		cmbEstadoEntrega.Items.AddRange(new object[5] { "POR REVISAR", "REVISADO", "DIAGNOSTICO", "REPARADO", "ENTREGADO" });
 		NuevaOrden();
 		Timer1.Enabled = true;
 		CentrarPanel();
-		try { File.AppendAllText(Path.Combine(Application.StartupPath, "keylog.txt"), "=== INICIO PRUEBA DECIMAL ===\r\n"); } catch { }
 	}
 
 	private bool IsRunningFromCompressedFolder()
@@ -159,6 +160,11 @@ public partial class frmOrdenServicio : Form
 			return;
 		}
 		bool flag = string.IsNullOrEmpty(txtOrden.Text.Trim());
+		if (flag && cmbTipoEquipo.SelectedIndex < 0)
+		{
+			Interaction.MsgBox("Debe seleccionar un tipo de equipo.", MsgBoxStyle.Exclamation);
+			return;
+		}
 		if (flag)
 		{
 			txtOrden.Text = GenerarNuevoNumeroOrden();
@@ -189,7 +195,29 @@ public partial class frmOrdenServicio : Form
 				num = Convert.ToInt32(RuntimeHelpers.GetObjectValue(objectValue));
 			}
 		}
-		string value = (rbtnLaptop.Checked ? "Laptop" : (rbtnImpresora.Checked ? "Impresora" : (rbtnPC.Checked ? "PC" : ("Otros: " + txtOtros.Text.Trim()))));
+		string value = cmbTipoEquipo.Text;
+		if (Operators.CompareString(cmbTipoEquipo.SelectedItem?.ToString(), "Otros", TextCompare: false) == 0)
+		{
+			string text5 = txtNuevoTipoEquipo.Text.Trim();
+			if (Operators.CompareString(text5, "", TextCompare: false) == 0)
+			{
+				Interaction.MsgBox("Debe ingresar el tipo de equipo.", MsgBoxStyle.Exclamation);
+				txtNuevoTipoEquipo.Focus();
+				return;
+			}
+			string text6 = TipoEquipoCatalog.ResolverOCrearTipo(text5);
+			CargarTiposEquipo();
+			int num2 = cmbTipoEquipo.Items.IndexOf(text6);
+			if (num2 < 0)
+			{
+				num2 = cmbTipoEquipo.Items.Add(text6);
+			}
+			cmbTipoEquipo.SelectedIndex = num2;
+			value = text6;
+			txtNuevoTipoEquipo.Text = "";
+			lblEspecificar.Visible = false;
+			txtNuevoTipoEquipo.Visible = false;
+		}
 		string text2 = ManejarImagen(imgFoto1, text);
 		string text3 = ManejarImagen(imgFoto2, text);
 		string text4 = ManejarImagen(imgFoto3, text);
@@ -388,7 +416,7 @@ public partial class frmOrdenServicio : Form
 				}
 				DibujarLinea(e, new string('_', num), num2, num4);
 				num4 += num5;
-				string valor = (rbtnLaptop.Checked ? "Laptop" : (rbtnImpresora.Checked ? "Impresora" : (rbtnPC.Checked ? "PC" : ("Otros: " + txtOtros.Text.Trim()))));
+				string valor = cmbTipoEquipo.Text;
 				DibujarLineaDosColumnas(e, "Equipo:", valor, "Marca:", txtMarca.Text, num - (int)Math.Round((double)num2 / 3.0), num2, num4);
 				num4 += num5;
 				DibujarLineaDosColumnas(e, "Modelo:", txtModelo.Text, "IMEI/Serie:", txtIMEI.Text, num - (int)Math.Round((double)num2 / 3.0), num2, num4);
@@ -557,7 +585,7 @@ public partial class frmOrdenServicio : Form
 					num3 += ObtenerAlturaTexto(e, "Cliente: " + txtNombre.Text, num6, fuenteTicket);
 					DibujarLinea(e, new string('-', num), num2, num3);
 					num3 += num4;
-					string text3 = (rbtnLaptop.Checked ? "Laptop" : (rbtnImpresora.Checked ? "Impresora" : (rbtnPC.Checked ? "PC" : ("Otros: " + txtOtros.Text.Trim()))));
+					string text3 = cmbTipoEquipo.Text;
 					DibujarTextoMultilinea(e, "Equipo: " + text3, num2, num3, num6);
 					num3 += ObtenerAlturaTexto(e, "Equipo: " + text3, num6, fuenteTicket);
 					if (!string.IsNullOrEmpty(txtMarca.Text))
@@ -764,6 +792,27 @@ public partial class frmOrdenServicio : Form
 		imgFoto3.BackgroundImage = sinImagen.BackgroundImage;
 		txtDocumento.Focus();
 		cmbEstadoEntrega.SelectedIndex = 0;
+		CargarTiposEquipo();
+		cmbTipoEquipo.SelectedIndex = -1;
+	}
+
+	private void cmbTipoEquipo_SelectedIndexChanged(object sender, EventArgs e)
+	{
+		if (cargandoTiposEquipo)
+		{
+			return;
+		}
+		bool esOtros = cmbTipoEquipo.SelectedItem != null && TipoEquipoCatalog.IgualNombre(cmbTipoEquipo.SelectedItem.ToString(), "Otros");
+		lblEspecificar.Visible = esOtros;
+		txtNuevoTipoEquipo.Visible = esOtros;
+		if (esOtros)
+		{
+			txtNuevoTipoEquipo.Focus();
+		}
+		else
+		{
+			txtNuevoTipoEquipo.Text = "";
+		}
 	}
 
 	private void btnGuardar_Click(object sender, EventArgs e)
@@ -953,15 +1002,34 @@ public partial class frmOrdenServicio : Form
 		txtReparado.Text = "";
 		txtEntregado.Text = "";
 		cmbEstadoEntrega.SelectedIndex = -1;
+		cmbTipoEquipo.SelectedIndex = -1;
+		lblEspecificar.Visible = false;
+		txtNuevoTipoEquipo.Visible = false;
+		txtNuevoTipoEquipo.Text = "";
 		LimpiarImagen(imgFoto1);
 		LimpiarImagen(imgFoto2);
 		LimpiarImagen(imgFoto3);
-		RadioButton[] array = new RadioButton[4] { rbtnLaptop, rbtnImpresora, rbtnPC, rbtnOtros };
-		foreach (RadioButton radioButton in array)
-		{
-			radioButton.Checked = false;
-		}
 		txtOrden.Text = "";
+	}
+
+	private void CargarTiposEquipo()
+	{
+		cargandoTiposEquipo = true;
+		try
+		{
+			cmbTipoEquipo.Items.Clear();
+			foreach (TipoEquipo tipo in TipoEquipoCatalog.ObtenerTipos())
+			{
+				if (tipo.Activo == 1)
+				{
+					cmbTipoEquipo.Items.Add(tipo.Nombre);
+				}
+			}
+		}
+		finally
+		{
+			cargandoTiposEquipo = false;
+		}
 	}
 
 	private void LimpiarControlesRecursivo(Control container)
@@ -1103,25 +1171,19 @@ public partial class frmOrdenServicio : Form
 				txtDocumento.Text = sQLiteDataReader["documento"].ToString();
 				txtTelefono.Text = sQLiteDataReader["telefono"].ToString();
 				string text = sQLiteDataReader["tipo_equipo"].ToString();
-				if (text.StartsWith("Otros:"))
+				int num = cmbTipoEquipo.Items.IndexOf(text);
+				if (num >= 0)
 				{
-					rbtnOtros.Checked = true;
-					txtOtros.Text = text.Substring(6).Trim();
+					cmbTipoEquipo.SelectedIndex = num;
+				}
+				else if (!string.IsNullOrEmpty(text))
+				{
+					cmbTipoEquipo.Items.Add(text);
+					cmbTipoEquipo.SelectedIndex = cmbTipoEquipo.Items.Count - 1;
 				}
 				else
 				{
-					switch (text)
-					{
-					case "Laptop":
-						rbtnLaptop.Checked = true;
-						break;
-					case "Impresora":
-						rbtnImpresora.Checked = true;
-						break;
-					case "PC":
-						rbtnPC.Checked = true;
-						break;
-					}
+					cmbTipoEquipo.SelectedIndex = -1;
 				}
 				txtMarca.Text = sQLiteDataReader["marca"].ToString();
 				txtModelo.Text = sQLiteDataReader["modelo"].ToString();
@@ -1204,7 +1266,6 @@ public partial class frmOrdenServicio : Form
 
 	private void frmOrdenServicio_FormClosing(object sender, FormClosingEventArgs e)
 	{
-		try { File.AppendAllText(Path.Combine(Application.StartupPath, "keylog.txt"), "=== FIN PRUEBA DECIMAL ===\r\n"); } catch { }
 		if (fuenteTicket != null)
 		{
 			fuenteTicket.Dispose();
@@ -1219,12 +1280,43 @@ public partial class frmOrdenServicio : Form
 
 	private void btnConfiguracion_Click(object sender, EventArgs e)
 	{
+		string tipoAnterior = cmbTipoEquipo.SelectedItem != null ? cmbTipoEquipo.SelectedItem.ToString() : cmbTipoEquipo.Text;
+		string nuevoTipoAnterior = txtNuevoTipoEquipo.Text;
+		bool estabaEnAltaRapida = cmbTipoEquipo.SelectedItem != null && TipoEquipoCatalog.IgualNombre(cmbTipoEquipo.SelectedItem.ToString(), "Otros");
+
 		using frmConfiguracion frmConfiguracion2 = new frmConfiguracion();
 		frmConfiguracion2.FormBorderStyle = FormBorderStyle.FixedDialog;
 		frmConfiguracion2.MaximizeBox = false;
 		frmConfiguracion2.MinimizeBox = false;
 		frmConfiguracion2.ControlBox = true;
 		frmConfiguracion2.ShowDialog();
+
+		CargarTiposEquipo();
+
+		if (string.IsNullOrEmpty(tipoAnterior))
+		{
+			cmbTipoEquipo.SelectedIndex = -1;
+		}
+		else
+		{
+			int num = cmbTipoEquipo.Items.IndexOf(tipoAnterior);
+			if (num >= 0)
+			{
+				cmbTipoEquipo.SelectedIndex = num;
+			}
+			else
+			{
+				cmbTipoEquipo.Items.Add(tipoAnterior);
+				cmbTipoEquipo.SelectedIndex = cmbTipoEquipo.Items.Count - 1;
+			}
+		}
+
+		if (estabaEnAltaRapida)
+		{
+			lblEspecificar.Visible = true;
+			txtNuevoTipoEquipo.Visible = true;
+			txtNuevoTipoEquipo.Text = nuevoTipoAnterior;
+		}
 	}
 
 	private void Panel1_Paint(object sender, PaintEventArgs e)
@@ -1440,16 +1532,6 @@ public partial class frmOrdenServicio : Form
 		campoAbono.AlKeyPress(e);
 	}
 
-	private void txtPresupuesto_KeyUp(object sender, KeyEventArgs e)
-	{
-		campoPresupuesto.AlKeyUp(e);
-	}
-
-	private void txtAbono_KeyUp(object sender, KeyEventArgs e)
-	{
-		campoAbono.AlKeyUp(e);
-	}
-
 	private void txtPresupuesto_Validating(object sender, CancelEventArgs e)
 	{
 		if (!FormatoMoneda.TryParseMonetarioPositivo(txtPresupuesto.Text, out _))
@@ -1496,17 +1578,6 @@ public partial class frmOrdenServicio : Form
 
 		private int ultimoCaret;
 
-		private static void LogKey(string evento, string datos)
-		{
-			try
-			{
-				File.AppendAllText(
-					Path.Combine(Application.StartupPath, "keylog.txt"),
-					"[" + DateTime.Now.ToString("HH:mm:ss.fff") + "] " + evento + ": " + datos + "\r\n");
-			}
-			catch { }
-		}
-
 		public CampoMonetario(TextBox caja)
 		{
 			this.caja = caja;
@@ -1527,8 +1598,6 @@ public partial class frmOrdenServicio : Form
 
 		public void AlKeyDown(KeyEventArgs e)
 		{
-			LogKey("KeyDown", "ctrl=" + caja.Name + " KeyCode=" + e.KeyCode + "(" + (int)e.KeyCode + ") KeyValue=" + e.KeyValue + " Mod=" + e.Modifiers + " Ctrl=" + e.Control + " Shift=" + e.Shift + " Alt=" + e.Alt + " Handled=" + e.Handled + " Suppress=" + e.SuppressKeyPress + " Text=\"" + caja.Text + "\" SelStart=" + caja.SelectionStart + " SelLen=" + caja.SelectionLength + " Origen=" + motor.Origen);
-
 			bool mutacionConfirmada = false;
 
 			if (e.Control && !e.Alt && e.KeyCode == Keys.X)
@@ -1668,8 +1737,6 @@ public partial class frmOrdenServicio : Form
 
 		public void AlKeyPress(KeyPressEventArgs e)
 		{
-			LogKey("KeyPress", "ctrl=" + caja.Name + " KeyChar='" + e.KeyChar + "' dec=" + (int)e.KeyChar + " hex=0x" + ((int)e.KeyChar).ToString("X2") + " Handled=" + e.Handled + " Text=\"" + caja.Text + "\" SelStart=" + caja.SelectionStart + " SelLen=" + caja.SelectionLength + " Origen=" + motor.Origen);
-
 			char c = e.KeyChar;
 			if (c < ' ')
 				return;
@@ -1684,11 +1751,6 @@ public partial class frmOrdenServicio : Form
 
 			if (c == '.')
 				e.KeyChar = ',';
-		}
-
-		public void AlKeyUp(KeyEventArgs e)
-		{
-			LogKey("KeyUp", "ctrl=" + caja.Name + " KeyCode=" + e.KeyCode + "(" + (int)e.KeyCode + ") Text=\"" + caja.Text + "\" SelStart=" + caja.SelectionStart + " SelLen=" + caja.SelectionLength);
 		}
 
 		public void AlTextChanged()
