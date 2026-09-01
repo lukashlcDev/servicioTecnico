@@ -834,20 +834,109 @@ public partial class frmOrdenServicio : Form
 
 	public void Imprimir()
 	{
-		string text = ObtenerValorConfiguracion("tipo_impresion");
+		string text = modConexion.ObtenerConfiguracion("tipo_impresion");
 		string left = text.ToLower();
-		if (Operators.CompareString(left, "ticket", TextCompare: false) == 0)
-		{
-			ImprimirTicket();
-		}
-		else if (Operators.CompareString(left, "carta", TextCompare: false) == 0)
-		{
-			ImprimirCarta();
-		}
-		else
+		if (Operators.CompareString(left, "ticket", TextCompare: false) != 0 && Operators.CompareString(left, "carta", TextCompare: false) != 0)
 		{
 			Interaction.MsgBox("El tipo de impresión configurado no es válido.", MsgBoxStyle.Exclamation);
+			return;
 		}
+		OrdenImpresionData datos = CrearOrdenImpresionData();
+		ConfiguracionImpresion config = CrearConfiguracionImpresion();
+		try
+		{
+			ImpresorOrden impresor = new ImpresorOrden();
+			impresor.Imprimir(datos, config);
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Interaction.MsgBox("Error al imprimir: " + ex.Message, MsgBoxStyle.Critical);
+			ProjectData.ClearProjectError();
+		}
+	}
+
+	public void Previsualizar()
+	{
+		string text = modConexion.ObtenerConfiguracion("tipo_impresion");
+		string left = text.ToLower();
+		if (Operators.CompareString(left, "ticket", TextCompare: false) != 0 && Operators.CompareString(left, "carta", TextCompare: false) != 0)
+		{
+			Interaction.MsgBox("El tipo de impresión configurado no es válido.", MsgBoxStyle.Exclamation);
+			return;
+		}
+		OrdenImpresionData datos = CrearOrdenImpresionData();
+		ConfiguracionImpresion config = CrearConfiguracionImpresion();
+		try
+		{
+			ImpresorOrden impresor = new ImpresorOrden();
+			impresor.Previsualizar(datos, config);
+		}
+		catch (Exception ex)
+		{
+			ProjectData.SetProjectError(ex);
+			Interaction.MsgBox("Error al previsualizar: " + ex.Message, MsgBoxStyle.Critical);
+			ProjectData.ClearProjectError();
+		}
+	}
+
+	// Construye el modelo de datos de impresion a partir de los controles actuales.
+	// Aun NO se utiliza: se introdujo en MEJ-004 Paso 1 sin cambiar la impresion.
+	private OrdenImpresionData CrearOrdenImpresionData()
+	{
+		decimal? presupuesto = null;
+		if (FormatoMoneda.TryParseMonetario(txtPresupuesto.Text, out decimal presupuestoParseado))
+		{
+			presupuesto = presupuestoParseado;
+		}
+		decimal? abono = null;
+		if (FormatoMoneda.TryParseMonetario(txtAbono.Text, out decimal abonoParseado))
+		{
+			abono = abonoParseado;
+		}
+		return new OrdenImpresionData
+		{
+			NumeroOrden = txtOrden.Text,
+			Fecha = txtFecha.Text,
+			Cliente = txtNombre.Text,
+			Documento = txtDocumento.Text,
+			Telefono = txtTelefono.Text,
+			Direccion = txtDireccion.Text,
+			TipoEquipo = cmbTipoEquipo.Text,
+			Marca = txtMarca.Text,
+			Modelo = txtModelo.Text,
+			IMEI = txtIMEI.Text,
+			Accesorios = txtAccesorios.Text,
+			Falla = txtFalla.Text,
+			Observaciones = txtObservaciones.Text,
+			Reparacion = txtReparacion.Text,
+			Estado = cmbEstadoEntrega.Text,
+			FechaReparado = txtReparado.Text,
+			FechaEntregado = txtEntregado.Text,
+			Condiciones = ObtenerCondicionesTexto(),
+			EmpresaNombre = Text,
+			EmpresaCorreo = EmpresaCorreo.Text,
+			EmpresaDireccion = EmpresaDireccion.Text,
+			Presupuesto = presupuesto,
+			Abono = abono,
+			Logo = picLogo.Image
+		};
+	}
+
+	// Construye la configuracion de impresion desde la tabla 'configuracion'.
+	// Aun NO se utiliza: se introdujo en MEJ-004 Paso 1 sin cambiar la impresion.
+	private ConfiguracionImpresion CrearConfiguracionImpresion()
+	{
+		ConfiguracionImpresion config = new ConfiguracionImpresion
+		{
+			Impresora = modConexion.ObtenerConfiguracion("impresora"),
+			TipoImpresion = modConexion.ObtenerConfiguracion("tipo_impresion")
+		};
+		string textoFuente = modConexion.ObtenerConfiguracion("fuente_ticket");
+		ConfiguracionImpresion.ParseFuente(textoFuente, 10f, out string nombre, out float tamano);
+		config.FuenteNombre = nombre;
+		config.TamanoFuente = tamano;
+		return config;
 	}
 
 	private string ObtenerValorConfiguracion(string clave)

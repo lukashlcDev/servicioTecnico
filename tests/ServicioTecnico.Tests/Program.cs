@@ -9,7 +9,7 @@ internal static class Program
 	private static int Main()
 	{
 		Console.WriteLine("Host de pruebas ServicioTecnico.Tests");
-		Console.WriteLine("Casos: FUN-041..044, FUN-FMT-001..007, HELPER-001..004, QUICK-001/006/007, ORDER-001..003, CFG-INIT-001, CFG-FOCUS-001, CFG-LAYOUT-001, CFG-FONT-001");
+		Console.WriteLine("Casos: FUN-041..044, FUN-FMT-001..007, HELPER-001..004, QUICK-001/006/007, ORDER-001..003, CFG-INIT-001, CFG-FOCUS-001, CFG-LAYOUT-001, CFG-FONT-001, IMP-MODELO-001..007, IMP-ORQ-001..003, IMP-CARTA-001..002, IMP-TICKET-001..002, IMP-RENDER-001..002");
 		Console.WriteLine("Entorno: Windows / x86 / .NET Framework 4.0");
 		Console.WriteLine();
 
@@ -39,6 +39,22 @@ internal static class Program
 		resultados.Add(Ejecutar("FUN-FMT-005", TestsFormatoMoneda.FUN_FMT_005));
 		resultados.Add(Ejecutar("FUN-FMT-006", TestsFormatoMoneda.FUN_FMT_006));
 		resultados.Add(Ejecutar("FUN-FMT-007", TestsFormatoMoneda.FUN_FMT_007));
+		resultados.Add(Ejecutar("IMP-MODELO-001", TestsImpresion.IMP_MODELO_001));
+		resultados.Add(Ejecutar("IMP-MODELO-002", TestsImpresion.IMP_MODELO_002));
+		resultados.Add(Ejecutar("IMP-MODELO-003", TestsImpresion.IMP_MODELO_003));
+		resultados.Add(Ejecutar("IMP-MODELO-004", TestsImpresion.IMP_MODELO_004));
+		resultados.Add(Ejecutar("IMP-MODELO-005", TestsImpresion.IMP_MODELO_005));
+		resultados.Add(Ejecutar("IMP-MODELO-006", TestsImpresion.IMP_MODELO_006));
+		resultados.Add(Ejecutar("IMP-MODELO-007", TestsImpresion.IMP_MODELO_007));
+		resultados.Add(Ejecutar("IMP-ORQ-001", TestsImpresion.IMP_ORQ_001));
+		resultados.Add(Ejecutar("IMP-ORQ-002", TestsImpresion.IMP_ORQ_002));
+		resultados.Add(Ejecutar("IMP-CARTA-001", TestsImpresion.IMP_CARTA_001));
+		resultados.Add(Ejecutar("IMP-CARTA-002", TestsImpresion.IMP_CARTA_002));
+		resultados.Add(Ejecutar("IMP-ORQ-003", TestsImpresion.IMP_ORQ_003));
+		resultados.Add(Ejecutar("IMP-TICKET-001", TestsImpresion.IMP_TICKET_001));
+		resultados.Add(Ejecutar("IMP-TICKET-002", TestsImpresion.IMP_TICKET_002));
+		resultados.Add(Ejecutar("IMP-RENDER-001", TestsImpresion.IMP_RENDER_001));
+		resultados.Add(Ejecutar("IMP-RENDER-002", TestsImpresion.IMP_RENDER_002));
 
 		Console.WriteLine();
 		Console.WriteLine("=== RESUMEN ===");
