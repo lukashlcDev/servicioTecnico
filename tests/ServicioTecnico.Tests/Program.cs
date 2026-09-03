@@ -9,7 +9,7 @@ internal static class Program
 	private static int Main()
 	{
 		Console.WriteLine("Host de pruebas ServicioTecnico.Tests");
-		Console.WriteLine("Casos: FUN-041..044, FUN-FMT-001..007, HELPER-001..004, QUICK-001/006/007, ORDER-001..003, CFG-INIT-001, CFG-FOCUS-001, CFG-LAYOUT-001, CFG-FONT-001, IMP-MODELO-001..007, IMP-ORQ-001..003, IMP-CARTA-001..002, IMP-TICKET-001..002, IMP-RENDER-001..002");
+		Console.WriteLine("Casos: FUN-041..044, FUN-FMT-001..007, HELPER-001..004, QUICK-001/006/007, ORDER-001..003, CFG-INIT-001, CFG-FOCUS-001, CFG-LAYOUT-001, CFG-FONT-001, IMP-MODELO-001..007, IMP-ORQ-001..003, IMP-CARTA-001..002, IMP-TICKET-001..002, IMP-RENDER-001..002, LS-FACTOR-001..005, LS-RATIO-001, LS-SNAP-001, LS-RESTORE-001, LS-CYCLE-001/002, LS-CENTER-001/002, LS-FONT-001, LS-RECUR-001, LS-DPI-001");
 		Console.WriteLine("Entorno: Windows / x86 / .NET Framework 4.0");
 		Console.WriteLine();
 
@@ -55,6 +55,21 @@ internal static class Program
 		resultados.Add(Ejecutar("IMP-TICKET-002", TestsImpresion.IMP_TICKET_002));
 		resultados.Add(Ejecutar("IMP-RENDER-001", TestsImpresion.IMP_RENDER_001));
 		resultados.Add(Ejecutar("IMP-RENDER-002", TestsImpresion.IMP_RENDER_002));
+		resultados.Add(Ejecutar("LS-FACTOR-001", TestsLayoutSizer.LS_FACTOR_001));
+		resultados.Add(Ejecutar("LS-FACTOR-002", TestsLayoutSizer.LS_FACTOR_002));
+		resultados.Add(Ejecutar("LS-FACTOR-003", TestsLayoutSizer.LS_FACTOR_003));
+		resultados.Add(Ejecutar("LS-FACTOR-004", TestsLayoutSizer.LS_FACTOR_004));
+		resultados.Add(Ejecutar("LS-FACTOR-005", TestsLayoutSizer.LS_FACTOR_005));
+		resultados.Add(Ejecutar("LS-RATIO-001", TestsLayoutSizer.LS_RATIO_001));
+		resultados.Add(Ejecutar("LS-SNAP-001", TestsLayoutSizer.LS_SNAP_001));
+		resultados.Add(Ejecutar("LS-RESTORE-001", TestsLayoutSizer.LS_RESTORE_001));
+		resultados.Add(Ejecutar("LS-CYCLE-001", TestsLayoutSizer.LS_CYCLE_001));
+		resultados.Add(Ejecutar("LS-CYCLE-002", TestsLayoutSizer.LS_CYCLE_002));
+		resultados.Add(Ejecutar("LS-CENTER-001", TestsLayoutSizer.LS_CENTER_001));
+		resultados.Add(Ejecutar("LS-CENTER-002", TestsLayoutSizer.LS_CENTER_002));
+		resultados.Add(Ejecutar("LS-FONT-001", TestsLayoutSizer.LS_FONT_001));
+		resultados.Add(Ejecutar("LS-RECUR-001", TestsLayoutSizer.LS_RECUR_001));
+		resultados.Add(Ejecutar("LS-DPI-001", TestsLayoutSizer.LS_DPI_001));
 
 		Console.WriteLine();
 		Console.WriteLine("=== RESUMEN ===");

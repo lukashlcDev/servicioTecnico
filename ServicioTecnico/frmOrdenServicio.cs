@@ -22,6 +22,8 @@ public partial class frmOrdenServicio : Form
 
 	private Font fuenteTicket;
 	private bool cargandoTiposEquipo;
+	private LayoutSizer _layoutSizer;
+	private Size _ultimoClientAplicado;
 
 	public frmOrdenServicio()
 	{
@@ -29,6 +31,10 @@ public partial class frmOrdenServicio : Form
 		base.Load += frmOrdenServicio_Load;
 		base.FormClosing += frmOrdenServicio_FormClosing;
 		InitializeComponent();
+		// Snapshot inmutable del layout original (posición (12,12), 1009x543 y
+		// fuentes del Designer): base de todo escalado posterior.
+		_layoutSizer = LayoutSizer.Capture(Panel1, ClientSize);
+		_ultimoClientAplicado = ClientSize;
 		CargarIconosFormulario();
 		campoPresupuesto = new CampoMonetario(txtPresupuesto);
 		campoAbono = new CampoMonetario(txtAbono);
@@ -56,20 +62,21 @@ public partial class frmOrdenServicio : Form
 
 	private void frmOrdenServicio_Resize(object sender, EventArgs e)
 	{
-		CentrarPanel();
-	}
-
-	private void CentrarPanel()
-	{
-		Panel panel = Panel1;
-		Point location = new Point(checked(ClientSize.Width - Panel1.Width) / 2, checked(ClientSize.Height - Panel1.Height) / 2);
-		panel.Location = location;
-		if (WindowState != FormWindowState.Maximized)
+		// El evento Resize cubre resize manual, maximizar, restaurar y cambios de
+		// tamaño programáticos (ResizeEnd no se dispara de forma confiable en todos
+		// esos casos). La guarda evita trabajo redundante: si el ClientSize no
+		// cambió no se re-aplica nada; LayoutSizer deriva siempre del snapshot
+		// inmutable, por lo que múltiples aplicaciones no producen drift.
+		if (_layoutSizer == null || ClientSize.Width <= 0 || ClientSize.Height <= 0)
 		{
-			Panel panel2 = Panel1;
-			Point location2 = new Point(Math.Max(10, Panel1.Location.X), Math.Max(10, Panel1.Location.Y));
-			panel2.Location = location2;
+			return;
 		}
+		if (ClientSize == _ultimoClientAplicado)
+		{
+			return;
+		}
+		_ultimoClientAplicado = ClientSize;
+		_layoutSizer.Apply(ClientSize);
 	}
 
 	private void frmOrdenServicio_Load(object sender, EventArgs e)
@@ -85,7 +92,6 @@ public partial class frmOrdenServicio : Form
 		cmbEstadoEntrega.Items.AddRange(new object[5] { "POR REVISAR", "REVISADO", "DIAGNOSTICO", "REPARADO", "ENTREGADO" });
 		NuevaOrden();
 		Timer1.Enabled = true;
-		CentrarPanel();
 	}
 
 	private bool IsRunningFromCompressedFolder()
@@ -1358,6 +1364,11 @@ public partial class frmOrdenServicio : Form
 		if (fuenteTicket != null)
 		{
 			fuenteTicket.Dispose();
+		}
+		if (_layoutSizer != null)
+		{
+			_layoutSizer.Dispose();
+			_layoutSizer = null;
 		}
 	}
 
